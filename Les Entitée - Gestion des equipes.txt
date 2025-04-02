@@ -1,0 +1,89 @@
+ Les Entités du Module "Gestion des Équipes"
+1️⃣ Équipe (Team)
+📌 Représente un groupe d’étudiants travaillant ensemble.
+
+ID (Identifiant unique)
+
+Nom (Nom de l’équipe)
+
+Description (Informations sur l’équipe)
+
+Admin (Un étudiant responsable de l’équipe)
+
+Membres (Liste des étudiants appartenant à l’équipe)
+
+Date de création
+
+➡️ Relation : Une équipe a un seul admin et plusieurs membres.
+
+
+2️⃣ Membre d’Équipe (TeamMember)
+📌 Relation entre un étudiant et une équipe, avec un rôle défini.
+
+ID (Identifiant unique)
+
+Équipe (Référence à l’équipe concernée)
+
+Utilisateur (L’étudiant qui appartient à l’équipe)
+
+Rôle (Admin ou Membre)
+
+Date d’adhésion
+
+➡️ Relation :
+
+Un membre appartient à une seule équipe.
+
+Une équipe peut avoir plusieurs membres.
+
+Un étudiant peut être admin de son équipe ou un simple membre.
+
+
+3️⃣ Projet à Évaluer (SubmittedProject)
+📌 Représente un projet soumis par une équipe pour évaluation.
+
+ID
+
+Nom du projet
+
+Équipe (Référence à l’équipe qui a soumis le projet)
+
+Type (Angular, Express.js, etc.)
+
+Lien du code source (GitHub, Cloudinary, etc.)
+
+Statut (En attente, En cours, Terminé)
+
+Date de soumission
+
+➡️ Relation : Une équipe soumet un projet pour évaluation.
+
+
+
+
+4️⃣ Évaluation IA (ProjectEvaluation)
+📌 Contient les résultats de l’évaluation automatique du projet.
+
+ID
+
+Projet soumis (Référence au SubmittedProject)
+
+Note finale (Sur 100)
+
+Critères d’évaluation :
+
+Qualité du code
+
+Bonnes pratiques
+
+Performance
+
+Exécution sans erreurs
+
+Tests réussis
+
+Rapport d’évaluation (Détails sur les points forts et axes d’amélioration)
+
+Date d’évaluation
+
+➡️ Relation : Une IA analyse un projet soumis et génère une évaluation.

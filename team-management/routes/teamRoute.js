@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const {Team} = require('../models/Team'); // Importer le modèle Team
 
@@ -110,13 +111,20 @@ router.put('/:id', async (req, res) => {
  * @Method DELETE
  * @access public
  */
+// Supprimer une équipe
 router.delete('/:id', async (req, res) => {
-    const team = await Team.findById(req.body.id)
-    if(team){
-        await Team.findByIdAndDelete(req.body.id)
-        res.status(200).json({message:"Team has been Deleted"})
-    }else{
-        res.status(404).json({message:"Team Not FOUND"})
+    try {
+        const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "ID invalide." });
+    }
+        const deletedTeam = await Team.findByIdAndDelete(id);
+    if (!deletedTeam) {
+        return res.status(404).json({ message: "Équipe non trouvée." });
+    }
+        res.status(200).json({ message: "Équipe supprimée avec succès." });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
     }
 });
 

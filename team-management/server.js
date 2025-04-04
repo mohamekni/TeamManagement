@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const teamRoutes = require('./routes/teamRoute');
 const teamMemberRoutes = require("./routes/teamMemberRoute");
+const projectsRoutes = require('./routes/projectRoutes')// Import des routes des projets
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ mongoose
 // Utiliser les routes
 app.use('/api/teams', teamRoutes);
 app.use('/api/teammembers', teamMemberRoutes);
+app.use('/api/projects', projectsRoutes);
 
 // Démarrer le serveur
 const PORT = process.env.PORT || 5000;

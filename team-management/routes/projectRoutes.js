@@ -9,10 +9,9 @@ router.post('/evaluate/:teamId', async (req, res) => {
 
     try {
         // Make a request to the Flask API to evaluate the project
-        const response = await axios.post(`http://localhost:5000/evaluate/${teamId}`, {
+        const response = await axios.post(`http://127.0.0.1:5000/evaluate/${teamId}`, {
             project_path: projectPath
         });
-
         // Send the response back to the client
         res.status(200).json(response.data);
     } catch (error) {

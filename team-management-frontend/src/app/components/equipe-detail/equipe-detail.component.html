@@ -1,85 +1,205 @@
-<div class="container mt-4" *ngIf="equipe">
-  <div class="card">
-    <div class="card-header bg-primary text-white">
-      <h2>{{ equipe.name }}</h2>
-    </div>
-    <div class="card-body">
-      <p><strong>Description:</strong> {{ equipe.description }}</p>
-      <p><strong>Admin:</strong> {{ equipe.admin }}</p>
-      <p><strong>Membres:</strong> {{ equipe.members?.length || 0 }}</p>
-
-      <div class="mt-3">
-        <button class="btn btn-outline-secondary me-2" (click)="navigateToEquipeList()">Retour à la liste</button>
-        <button class="btn btn-primary me-2" (click)="navigateToEditEquipe()">Modifier</button>
-        <button class="btn btn-danger" (click)="deleteEquipe()">Supprimer</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="card mt-4">
-    <div class="card-header">
-      <h3>Utilisateurs membres de l'équipe</h3>
-    </div>
-    <div class="card-body">
-      <div *ngIf="teamMembers && teamMembers.length > 0; else noMembers">
-        <ul class="list-group">
-          <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let membre of teamMembers">
-            <div>
-              <span class="fw-bold">{{ getUserName(membre.user) }}</span>
-              <span class="badge bg-primary ms-2">{{ membre.role === 'admin' ? 'Administrateur' : 'Membre' }}</span>
-              <small class="text-muted ms-2">(ID: {{ membre.user }})</small>
-            </div>
-            <button class="btn btn-sm btn-danger" (click)="removeMembreFromEquipe(membre._id)">
-              <i class="bi bi-trash me-1"></i> Retirer
+<div class="container-fluid py-5 bg-light" *ngIf="equipe">
+  <div class="container">
+    <!-- En-tête avec titre et actions -->
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+          <div>
+            <h1 class="display-4 fw-bold text-primary">{{ equipe.name }}</h1>
+            <p class="text-muted lead">Détails et membres de l'équipe</p>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary rounded-pill px-4 py-2" (click)="navigateToEquipeList()">
+              <i class="bi bi-arrow-left me-2"></i> Retour
             </button>
-          </li>
-        </ul>
-      </div>
-      <ng-template #noMembers>
-        <p class="text-muted">Aucun utilisateur membre dans cette équipe</p>
-      </ng-template>
-
-      <div class="mt-4">
-        <h4>Ajouter un utilisateur comme membre</h4>
-
-        <!-- Afficher un message si aucun utilisateur n'est disponible -->
-        <div *ngIf="availableUsers.length === 0" class="alert alert-info">
-          <i class="bi bi-info-circle-fill me-2"></i>
-          Aucun utilisateur disponible. Veuillez d'abord créer des utilisateurs.
+            <button class="btn btn-outline-primary rounded-pill px-4 py-2" (click)="navigateToEditEquipe()">
+              <i class="bi bi-pencil me-2"></i> Modifier
+            </button>
+            <button class="btn btn-outline-danger rounded-pill px-4 py-2" (click)="deleteEquipe()">
+              <i class="bi bi-trash me-2"></i> Supprimer
+            </button>
+          </div>
         </div>
+        <hr class="my-4">
+      </div>
+    </div>
 
-        <!-- Formulaire d'ajout d'utilisateur avec rôle -->
-        <div *ngIf="availableUsers.length > 0" class="card mb-3">
-          <div class="card-body">
-            <div class="row g-3">
-              <!-- Sélection de l'utilisateur -->
-              <div class="col-md-6">
-                <label for="userSelect" class="form-label">Utilisateur</label>
-                <select #userSelect id="userSelect" class="form-select">
-                  <option value="" selected disabled>Sélectionnez un utilisateur</option>
-                  <option *ngFor="let user of availableUsers" [value]="user._id || user.id">
-                    {{ user.firstName || '' }} {{ user.lastName || user.name || user.id }}
-                    {{ user.profession ? '(' + user.profession + ')' : '' }}
-                  </option>
-                </select>
+    <!-- Carte d'informations de l'équipe -->
+    <div class="row mb-5">
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+          <div class="card-header bg-gradient-primary text-white border-0 py-4">
+            <h3 class="mb-0 d-flex align-items-center">
+              <i class="bi bi-info-circle-fill me-2"></i>
+              Informations de l'équipe
+            </h3>
+          </div>
+          <div class="card-body p-4">
+            <div class="row">
+              <div class="col-md-8">
+                <h4 class="text-primary mb-3">Description</h4>
+                <p class="lead">{{ equipe.description }}</p>
               </div>
-
-              <!-- Sélection du rôle dans l'équipe -->
               <div class="col-md-4">
-                <label for="roleSelect" class="form-label">Rôle dans l'équipe</label>
-                <select #roleSelect id="roleSelect" class="form-select">
-                  <option value="membre" selected>Membre</option>
-                  <option value="admin">Administrateur</option>
-                </select>
+                <div class="card bg-light border-0 rounded-3 h-100">
+                  <div class="card-body">
+                    <h5 class="text-primary mb-3">Statistiques</h5>
+                    <div class="d-flex align-items-center mb-3">
+                      <div class="bg-primary rounded-circle p-2 me-3 text-white">
+                        <i class="bi bi-people-fill"></i>
+                      </div>
+                      <div>
+                        <div class="small text-muted">Membres</div>
+                        <div class="fw-bold fs-5">{{ equipe.members?.length || 0 }}</div>
+                      </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <div class="bg-success rounded-circle p-2 me-3 text-white">
+                        <i class="bi bi-person-fill-gear"></i>
+                      </div>
+                      <div>
+                        <div class="small text-muted">Administrateur</div>
+                        <div class="fw-bold">{{ equipe.admin ? (getUserName(equipe.admin) || equipe.admin) : 'Non défini' }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section des membres de l'équipe -->
+    <div class="row mb-5">
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+          <div class="card-header bg-gradient-primary text-white border-0 py-4">
+            <h3 class="mb-0 d-flex align-items-center">
+              <i class="bi bi-people-fill me-2"></i>
+              Membres de l'équipe
+            </h3>
+          </div>
+          <div class="card-body p-4">
+            <!-- Liste des membres -->
+            <div *ngIf="teamMembers && teamMembers.length > 0; else noMembers">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th>
+                        <div class="d-flex align-items-center">
+                          <i class="bi bi-person text-primary me-2"></i> Utilisateur
+                        </div>
+                      </th>
+                      <th>
+                        <div class="d-flex align-items-center">
+                          <i class="bi bi-shield-lock text-primary me-2"></i> Rôle
+                        </div>
+                      </th>
+                      <th class="text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let membre of teamMembers" class="transition hover-row">
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <div class="rounded-circle bg-light p-2 me-3">
+                            <i class="bi" [ngClass]="{
+                              'bi-mortarboard-fill text-primary': getUserProfession(membre.user) === 'etudiant',
+                              'bi-briefcase-fill text-success': getUserProfession(membre.user) === 'professeur',
+                              'bi-person-fill text-secondary': !getUserProfession(membre.user)
+                            }"></i>
+                          </div>
+                          <div>
+                            <div class="fw-medium">{{ getUserName(membre.user) }}</div>
+                            <small class="text-muted">ID: {{ membre.user }}</small>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge rounded-pill px-3 py-2 shadow-sm" [ngClass]="{
+                          'bg-success': membre.role === 'admin',
+                          'bg-primary': membre.role === 'membre'
+                        }">
+                          <i class="bi" [ngClass]="{
+                            'bi-person-fill-gear': membre.role === 'admin',
+                            'bi-person': membre.role === 'membre'
+                          }"></i>
+                          {{ membre.role === 'admin' ? 'Administrateur' : 'Membre' }}
+                        </span>
+                      </td>
+                      <td class="text-center">
+                        <button class="btn btn-sm btn-outline-danger rounded-circle"
+                                title="Retirer de l'équipe"
+                                (click)="removeMembreFromEquipe(membre._id)">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <ng-template #noMembers>
+              <div class="text-center py-4">
+                <i class="bi bi-people fs-1 text-muted mb-3 d-block"></i>
+                <h5 class="text-muted">Aucun membre dans cette équipe</h5>
+                <p class="text-muted">Ajoutez des membres à l'équipe en utilisant le formulaire ci-dessous.</p>
+              </div>
+            </ng-template>
+
+            <!-- Formulaire d'ajout de membre -->
+            <div class="mt-4">
+              <h5 class="d-flex align-items-center mb-3">
+                <i class="bi bi-person-plus-fill text-primary me-2"></i>
+                Ajouter un membre
+              </h5>
+
+              <!-- Afficher un message si aucun utilisateur n'est disponible -->
+              <div *ngIf="availableUsers.length === 0" class="alert alert-info border-0 rounded-3 shadow-sm d-flex align-items-center">
+                <i class="bi bi-info-circle-fill fs-4 me-3 text-primary"></i>
+                <div>Aucun utilisateur disponible. Veuillez d'abord créer des utilisateurs.</div>
               </div>
 
-              <!-- Bouton d'ajout -->
-              <div class="col-md-2 d-flex align-items-end">
-                <button type="button" class="btn btn-primary w-100"
-                        [disabled]="!userSelect.value"
-                        (click)="addMembre(userSelect.value, roleSelect.value); userSelect.value = ''">
-                  <i class="bi bi-plus-circle me-1"></i> Ajouter
-                </button>
+              <!-- Formulaire d'ajout d'utilisateur avec rôle -->
+              <div *ngIf="availableUsers.length > 0" class="card border-0 bg-light rounded-3 mb-3">
+                <div class="card-body p-4">
+                  <div class="row g-3">
+                    <!-- Sélection de l'utilisateur -->
+                    <div class="col-md-6">
+                      <label for="userSelect" class="form-label fw-medium">Utilisateur</label>
+                      <select #userSelect id="userSelect" class="form-select border-0 shadow-sm">
+                        <option value="" selected disabled>Sélectionnez un utilisateur</option>
+                        <option *ngFor="let user of availableUsers" [value]="user._id || user.id">
+                          {{ user.firstName || '' }} {{ user.lastName || user.name || user.id }}
+                          {{ user.email ? '- ' + user.email : '' }}
+                          {{ user.profession ? '(' + (user.profession === 'etudiant' ? 'Étudiant' : 'Professeur') + ')' : '' }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <!-- Sélection du rôle dans l'équipe -->
+                    <div class="col-md-4">
+                      <label for="roleSelect" class="form-label fw-medium">Rôle dans l'équipe</label>
+                      <select #roleSelect id="roleSelect" class="form-select border-0 shadow-sm">
+                        <option value="membre" selected>Membre</option>
+                        <option value="admin">Administrateur</option>
+                      </select>
+                    </div>
+
+                    <!-- Bouton d'ajout -->
+                    <div class="col-md-2 d-flex align-items-end">
+                      <button type="button" class="btn btn-primary rounded-pill w-100 shadow-sm"
+                              [disabled]="!userSelect.value"
+                              (click)="addMembre(userSelect.value, roleSelect.value); userSelect.value = ''">
+                        <i class="bi bi-plus-circle me-1"></i> Ajouter
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -89,8 +209,49 @@
   </div>
 </div>
 
-<div class="container mt-4" *ngIf="!equipe">
-  <div class="alert alert-warning">
-    Équipe non trouvée ou en cours de chargement...
+<!-- Message de chargement ou d'erreur -->
+<div class="container-fluid py-5 bg-light" *ngIf="!equipe">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 text-center">
+        <div class="alert alert-warning shadow-sm border-0 rounded-3 d-flex align-items-center p-4">
+          <i class="bi bi-exclamation-triangle-fill fs-1 me-4 text-warning"></i>
+          <div class="fs-5">
+            Équipe non trouvée ou en cours de chargement...
+          </div>
+        </div>
+        <button class="btn btn-outline-primary rounded-pill mt-4" (click)="navigateToEquipeList()">
+          <i class="bi bi-arrow-left me-2"></i> Retour à la liste des équipes
+        </button>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- Styles spécifiques pour cette page -->
+<style>
+  /* Fond dégradé pour l'en-tête du formulaire */
+  .bg-gradient-primary {
+    background: linear-gradient(45deg, #007bff, #6610f2) !important;
+  }
+
+  /* Animation au survol des lignes du tableau */
+  .transition {
+    transition: all 0.2s ease;
+  }
+
+  .hover-row:hover {
+    background-color: rgba(13, 110, 253, 0.05) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Animation pour les boutons */
+  .btn {
+    transition: all 0.3s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+</style>

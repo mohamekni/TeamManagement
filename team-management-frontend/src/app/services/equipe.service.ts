@@ -49,9 +49,15 @@ export class EquipeService {
 
   deleteEquipe(id: string): Observable<any> {
     console.log(`Deleting team with id ${id}`);
+    console.log(`API URL: ${this.apiUrl}/${id}`);
+
     return this.http.delete(`${this.apiUrl}/${id}`).pipe(
       tap(data => console.log('Team deleted, response:', data)),
-      catchError(this.handleError)
+      catchError(error => {
+        console.error('Error deleting team:', error);
+        console.error('Request URL:', `${this.apiUrl}/${id}`);
+        return this.handleError(error);
+      })
     );
   }
 
@@ -77,11 +83,16 @@ export class EquipeService {
 
   removeMembreFromEquipe(teamId: string, membreId: string): Observable<any> {
     console.log(`Removing member ${membreId} from team ${teamId}`);
+    console.log(`API URL: ${this.apiUrl}/${teamId}/members/${membreId}`);
 
     // Utiliser la route directe pour supprimer un membre d'une équipe
     return this.http.delete<any>(`${this.apiUrl}/${teamId}/members/${membreId}`).pipe(
       tap(data => console.log('Member removed, response:', data)),
-      catchError(this.handleError)
+      catchError(error => {
+        console.error('Error removing member:', error);
+        console.error('Request URL:', `${this.apiUrl}/${teamId}/members/${membreId}`);
+        return this.handleError(error);
+      })
     );
   }
 

@@ -91,7 +91,11 @@ export class EquipeDetailComponent implements OnInit {
   }
 
   // Méthode pour obtenir le nom d'un utilisateur à partir de son ID
-  getUserName(userId: string): string {
+  getUserName(userId: string | undefined): string {
+    if (!userId) {
+      return 'Non défini';
+    }
+
     const user = this.availableUsers.find(u => u._id === userId || u.id === userId);
     if (user) {
       if (user.firstName && user.lastName) {
@@ -101,6 +105,19 @@ export class EquipeDetailComponent implements OnInit {
       }
     }
     return userId;
+  }
+
+  // Méthode pour obtenir la profession d'un utilisateur à partir de son ID
+  getUserProfession(userId: string | undefined): string {
+    if (!userId) {
+      return '';
+    }
+
+    const user = this.availableUsers.find(u => u._id === userId || u.id === userId);
+    if (user) {
+      return user.profession || user.role || '';
+    }
+    return '';
   }
 
   loadEquipe(id: string): void {
@@ -206,45 +223,83 @@ export class EquipeDetailComponent implements OnInit {
   }
 
   removeMembreFromEquipe(membreId: string): void {
+    console.log('Méthode removeMembreFromEquipe appelée avec ID:', membreId);
+
     if (!this.equipeId) {
       console.error('ID d\'équipe manquant');
+      this.error = 'ID d\'équipe manquant. Impossible de retirer le membre.';
       return;
     }
 
+    // Dans notre implémentation actuelle, membre._id est l'ID de l'utilisateur
+    const userId = membreId;
+
     // Récupérer le nom de l'utilisateur pour un message plus informatif
-    const userName = this.getMembreName(membreId);
+    const userName = this.getUserName(userId);
+
+    console.log(`Tentative de retrait de l'utilisateur ${userId} (${userName}) de l'équipe ${this.equipeId}`);
 
     if (confirm(`Êtes-vous sûr de vouloir retirer l'utilisateur "${userName}" de l'équipe?`)) {
-      this.equipeService.removeMembreFromEquipe(this.equipeId, membreId).subscribe({
-        next: () => {
-          console.log(`Utilisateur "${userName}" retiré avec succès de l'équipe`);
+      console.log('Confirmation acceptée, suppression en cours...');
+
+      this.loading = true;
+      this.error = null;
+
+      this.equipeService.removeMembreFromEquipe(this.equipeId, userId).subscribe({
+        next: (response) => {
+          console.log(`Utilisateur "${userName}" retiré avec succès de l'équipe:`, response);
+          this.loading = false;
+
+          // Recharger les membres de l'équipe
+          this.loadTeamMembers(this.equipeId!);
+
+          // Recharger l'équipe pour mettre à jour la liste des membres
           this.loadEquipe(this.equipeId!);
         },
         error: (error) => {
           console.error(`Erreur lors du retrait de l'utilisateur "${userName}":`, error);
-          this.error = `Impossible de retirer l'utilisateur "${userName}" de l'équipe. Veuillez réessayer plus tard.`;
+          this.loading = false;
+          this.error = `Impossible de retirer l'utilisateur "${userName}" de l'équipe: ${error.message || 'Erreur inconnue'}`;
         }
       });
+    } else {
+      console.log('Suppression annulée par l\'utilisateur');
     }
   }
 
   deleteEquipe(): void {
+    console.log('Méthode deleteEquipe appelée');
+
     if (!this.equipeId) {
       console.error('ID d\'équipe manquant');
+      this.error = 'ID d\'équipe manquant. Impossible de supprimer l\'équipe.';
       return;
     }
 
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette équipe? Cette action est irréversible.')) {
+    console.log('ID de l\'équipe à supprimer:', this.equipeId);
+
+    if (confirm(`Êtes-vous sûr de vouloir supprimer l'équipe "${this.equipe?.name}"? Cette action est irréversible.`)) {
+      console.log('Confirmation acceptée, suppression en cours...');
+
+      this.loading = true;
+      this.error = null;
+
       this.equipeService.deleteEquipe(this.equipeId).subscribe({
         next: () => {
           console.log('Équipe supprimée avec succès');
+          this.loading = false;
+          alert('Équipe supprimée avec succès');
           this.router.navigate(['/equipes/liste']);
         },
         error: (error) => {
           console.error('Erreur lors de la suppression de l\'équipe:', error);
-          this.error = 'Impossible de supprimer l\'équipe. Veuillez réessayer plus tard.';
+          this.loading = false;
+          this.error = `Impossible de supprimer l'équipe: ${error.message || 'Erreur inconnue'}`;
+          alert(`Erreur lors de la suppression: ${this.error}`);
         }
       });
+    } else {
+      console.log('Suppression annulée par l\'utilisateur');
     }
   }
 }

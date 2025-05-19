@@ -158,23 +158,36 @@ router.delete('/:id/members/:memberId', async (req, res) => {
         const { id, memberId } = req.params;
 
         console.log(`Removing member ${memberId} from team ${id}`);
+        console.log('Request params:', req.params);
 
         // Vérifier si l'équipe existe
         const team = await Team.findById(id);
         if (!team) {
+            console.log('Équipe non trouvée avec ID:', id);
             return res.status(404).json({ message: "Équipe non trouvée" });
         }
 
+        console.log('Équipe trouvée:', team.name);
+        console.log('Membres avant suppression:', team.members);
+
         // Vérifier si le membre existe dans l'équipe
-        if (!team.members || !team.members.includes(memberId)) {
+        if (!team.members) {
+            return res.status(404).json({ message: "Aucun membre dans l'équipe" });
+        }
+
+        // Convertir les ObjectId en chaînes pour la comparaison
+        const memberExists = team.members.some(member => member.toString() === memberId);
+        if (!memberExists) {
             return res.status(404).json({ message: "Membre non trouvé dans l'équipe" });
         }
 
         // Supprimer le membre de l'équipe
-        team.members = team.members.filter(member => member !== memberId);
+        team.members = team.members.filter(member => member.toString() !== memberId);
+        console.log('Membres après filtrage:', team.members);
 
         // Sauvegarder l'équipe mise à jour
         await team.save();
+        console.log('Équipe sauvegardée avec succès');
 
         res.status(200).json({ message: "Membre supprimé avec succès", team });
     } catch (err) {

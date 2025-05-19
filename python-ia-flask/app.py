@@ -24,20 +24,12 @@ def evaluate_project(project_path):
 
 # API endpoint for project evaluation
 @app.route('/evaluate/<team_id>', methods=['POST'])
-def evaluate(team_id):
-    data = request.get_json()
-    project_path = data.get("project_path")  # This would be the path to the project files
+def evaluate_project(team_id):
+    data = request.json
+    project_path = data.get('project_path')
 
-    # Call the AI function to evaluate the project
-    evaluation = evaluate_project(project_path)
-    
-    # Here you can save the evaluation to your database (MongoDB)
-    # For now, we return the evaluation result as a response
-    return jsonify({
-        "team_id": team_id,
-        "evaluation_score": evaluation["score"],
-        "evaluation_details": evaluation["details"]
-    }), 200
+    # Traitement ici
+    return jsonify({"team_id": team_id, "status": "ok"})
 
 # Run the app
 if __name__ == "__main__":

@@ -1,0 +1,170 @@
+<div class="card shadow-sm">
+  <div class="card-header bg-primary text-white">
+    <h2 class="mb-0">{{ isEditMode ? 'Modifier l\'équipe' : 'Créer une nouvelle équipe' }}</h2>
+  </div>
+
+  <div class="card-body">
+    <!-- Loading message -->
+    <div *ngIf="loading" class="text-center my-3">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Chargement...</span>
+      </div>
+      <p class="mt-2">Chargement des données...</p>
+    </div>
+
+    <!-- Error message -->
+    <div *ngIf="error" class="alert alert-danger">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Form -->
+    <form (ngSubmit)="onSubmit()" *ngIf="!loading">
+      <!-- Name field -->
+      <div class="mb-3">
+        <label for="name" class="form-label fw-bold">Nom de l'équipe *</label>
+        <input
+          #nameInput
+          type="text"
+          class="form-control"
+          [class.is-invalid]="nameExists"
+          id="name"
+          [value]="equipe.name || ''"
+          (input)="updateName(nameInput.value)"
+          required
+        >
+        <div *ngIf="nameExists" class="invalid-feedback">
+          Ce nom d'équipe existe déjà. Veuillez en choisir un autre.
+        </div>
+        <div *ngIf="error && !equipe.name" class="text-danger mt-1">
+          <small>Le nom de l'équipe est requis.</small>
+        </div>
+      </div>
+
+      <!-- Description field -->
+      <div class="mb-3">
+        <label for="description" class="form-label fw-bold">Description</label>
+        <textarea
+          #descInput
+          class="form-control"
+          id="description"
+          rows="4"
+          [value]="equipe.description || ''"
+          (input)="updateDescription(descInput.value)"
+        ></textarea>
+        <div class="form-text">Une description détaillée de l'équipe (optionnel).</div>
+      </div>
+
+      <!-- Admin field - hidden for now, using default value -->
+      <input type="hidden" [value]="equipe.admin">
+      <div class="alert alert-info">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        Note: Un administrateur par défaut sera assigné à cette équipe.
+      </div>
+
+      <!-- Membres de l'équipe (visible uniquement en mode édition) -->
+      <div *ngIf="isEditMode && equipe._id" class="mt-4">
+        <h4>Membres de l'équipe</h4>
+
+        <div *ngIf="equipe.members && equipe.members.length > 0; else noMembers">
+          <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let membreId of equipe.members">
+              <div>
+                <span class="fw-bold">{{ getMembreName(membreId) }}</span>
+                <small class="text-muted ms-2" *ngIf="getMembreName(membreId) !== membreId">({{ membreId }})</small>
+              </div>
+              <button type="button" class="btn btn-sm btn-danger" (click)="removeMembreFromEquipe(membreId)">
+                <i class="bi bi-trash me-1"></i> Retirer
+              </button>
+            </li>
+          </ul>
+        </div>
+        <ng-template #noMembers>
+          <p class="text-muted">Aucun membre dans cette équipe</p>
+        </ng-template>
+
+        <!-- Formulaire pour ajouter un membre -->
+        <div class="mt-3">
+          <h5>Ajouter un membre</h5>
+
+          <!-- Afficher un message si aucun utilisateur ou membre n'est disponible -->
+          <div *ngIf="availableUsers.length === 0 && availableMembers.length === 0" class="alert alert-info">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            Aucun utilisateur ou membre disponible. Veuillez d'abord créer des utilisateurs ou des membres.
+          </div>
+
+          <!-- Liste déroulante des utilisateurs disponibles -->
+          <div *ngIf="availableUsers.length > 0" class="input-group mb-3">
+            <select #userSelect class="form-select">
+              <option value="" selected disabled>Sélectionnez un utilisateur</option>
+              <option *ngFor="let user of availableUsers" [value]="user._id || user.id">
+                {{ user.name || user.id }} {{ user.email ? '(' + user.email + ')' : '' }}
+              </option>
+            </select>
+            <button type="button" class="btn btn-primary"
+                    [disabled]="!userSelect.value"
+                    (click)="addMembreToEquipe(userSelect.value); userSelect.value = ''">
+              <i class="bi bi-plus-circle me-1"></i> Ajouter
+            </button>
+          </div>
+
+          <!-- Liste déroulante des membres disponibles (fallback) -->
+          <div *ngIf="availableUsers.length === 0 && availableMembers.length > 0" class="input-group mb-3">
+            <select #membreSelect class="form-select">
+              <option value="" selected disabled>Sélectionnez un membre</option>
+              <option *ngFor="let membre of availableMembers" [value]="membre._id || membre.id">
+                {{ membre.name || membre.id }}
+              </option>
+            </select>
+            <button type="button" class="btn btn-primary"
+                    [disabled]="!membreSelect.value"
+                    (click)="addMembreToEquipe(membreSelect.value); membreSelect.value = ''">
+              <i class="bi bi-plus-circle me-1"></i> Ajouter
+            </button>
+          </div>
+
+          <!-- Option alternative: saisie manuelle de l'ID -->
+          <div class="mt-3">
+            <details>
+              <summary class="text-primary cursor-pointer">Ajouter par ID</summary>
+              <div class="mt-2">
+                <div class="input-group mb-2">
+                  <input #membreIdInput type="text" class="form-control" placeholder="ID du membre">
+                  <button type="button" class="btn btn-outline-primary"
+                          [disabled]="!membreIdInput.value"
+                          (click)="addMembreToEquipe(membreIdInput.value); membreIdInput.value = ''">
+                    Ajouter
+                  </button>
+                </div>
+                <small class="text-muted">Utilisez cette option si le membre n'apparaît pas dans la liste</small>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="d-flex gap-2 mt-4 justify-content-between">
+        <button
+          type="button"
+          class="btn btn-outline-secondary"
+          (click)="cancel()"
+        >
+          <i class="bi bi-arrow-left me-1"></i>
+          Retour
+        </button>
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="submitting || !equipe.name || nameExists"
+        >
+          <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!submitting" class="bi bi-save me-1"></i>
+          {{ isEditMode ? 'Mettre à jour' : 'Créer l\'équipe' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+

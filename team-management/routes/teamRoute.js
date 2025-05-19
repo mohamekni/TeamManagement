@@ -23,7 +23,6 @@ router.get('/', async (req, res) => {
 
 
 
-
 // Créer une nouvelle équipe
 /**
  * @desc Get All Teams
@@ -33,27 +32,29 @@ router.get('/', async (req, res) => {
  */
 router.post('/', async (req, res) => {
     try {
-    const { name, description, admin, members } = req.body;
+        const { name, description, admin, members } = req.body;
+        console.log('Backend received:', req.body); // Add this for debugging
 
-    // Vérifier si l'équipe existe déjà
-    const existingTeam = await Team.findOne({ name });
-    if (existingTeam) {
-        return res.status(400).json({ message: "L'équipe existe déjà." });
-    }
-
-    // Créer une nouvelle équipe
-    const newTeam = new Team({
-        name,
-        description,
-        admin,
-        members,
-    });
-
-    await newTeam.save();
-    res.status(201).json(newTeam);
-        } catch (err) {
-    res.status(500).json({ message: err.message });
+        // Vérifier si l'équipe existe déjà
+        const existingTeam = await Team.findOne({ name });
+        if (existingTeam) {
+            return res.status(400).json({ message: "L'équipe existe déjà." });
         }
+
+        // Créer une nouvelle équipe
+        const newTeam = new Team({
+            name,
+            description,
+            admin,
+            members,
+        });
+
+        await newTeam.save();
+        res.status(201).json(newTeam);
+    } catch (err) {
+        console.error('Error creating team:', err); // Add this for debugging
+        res.status(500).json({ message: err.message });
+    }
 });
 
 // Récupérer une équipe par son ID

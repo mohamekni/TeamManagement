@@ -1,0 +1,56 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Liste des Équipes</h2>
+    <button class="btn btn-primary" (click)="navigateToAddEquipe()">
+      <i class="bi bi-plus-circle"></i> Nouvelle Équipe
+    </button>
+  </div>
+
+  <!-- Message de chargement -->
+  <div *ngIf="loading" class="text-center">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p>Chargement des équipes...</p>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+    <button class="btn btn-sm btn-outline-danger ms-2" (click)="loadEquipes()">Réessayer</button>
+  </div>
+
+  <!-- Liste des équipes -->
+  <div *ngIf="!loading && !error && equipes.length === 0" class="alert alert-info">
+    Aucune équipe trouvée. Cliquez sur "Nouvelle Équipe" pour en créer une.
+  </div>
+
+  <div class="row row-cols-1 row-cols-md-3 g-4" *ngIf="equipes.length > 0">
+    <div class="col" *ngFor="let equipe of equipes">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">{{ equipe.name }}</h5>
+          <p class="card-text">{{ equipe.description || 'Aucune description' }}</p>
+          <p class="card-text">
+            <small class="text-muted">
+              {{ equipe.members?.length || 0 }} membre(s)
+            </small>
+          </p>
+        </div>
+        <div class="card-footer bg-transparent">
+          <div class="btn-group w-100">
+            <button class="btn btn-sm btn-outline-primary" (click)="equipe._id && navigateToEquipeDetail(equipe._id)">
+              <i class="bi bi-eye"></i> Détails
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="equipe._id && navigateToEditEquipe(equipe._id)">
+              <i class="bi bi-pencil"></i> Modifier
+            </button>
+            <button class="btn btn-sm btn-outline-danger" (click)="equipe._id && deleteEquipe(equipe._id)">
+              <i class="bi bi-trash"></i> Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

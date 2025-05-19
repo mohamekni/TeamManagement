@@ -4,15 +4,16 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const teamRoutes = require('./routes/teamRoute');
 const teamMemberRoutes = require("./routes/teamMemberRoute");
-const projectsRoutes = require('./routes/projectRoutes')// Import des routes des projets
+const projectsRoutes = require('./routes/projectRoutes'); // Import des routes des projets
+const userRoutes = require('./routes/userRoutes'); // Import des routes des utilisateurs
 
 dotenv.config();
 
 const app = express();
 
 // Middleware pour parser le JSON
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
 // Connexion à MongoDB
 mongoose
@@ -25,6 +26,7 @@ mongoose
 app.use('/api/teams', teamRoutes);
 app.use('/api/teammembers', teamMemberRoutes);
 app.use('/api/projects', projectsRoutes);
+app.use('/api/users', userRoutes);
 
 // Démarrer le serveur
 const PORT = process.env.PORT || 5000;

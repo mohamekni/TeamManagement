@@ -1,0 +1,140 @@
+<div class="container mt-4">
+  <!-- Message d'erreur -->
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" (click)="error = null" aria-label="Close"></button>
+  </div>
+
+  <!-- Indicateur de chargement -->
+  <div *ngIf="loading" class="d-flex justify-content-center mb-4">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+  </div>
+
+  <!-- Liste des utilisateurs -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Liste des utilisateurs</h2>
+        <button class="btn btn-sm btn-outline-primary" (click)="loadUsers()">
+          <i class="bi bi-arrow-clockwise"></i> Rafraîchir
+        </button>
+      </div>
+
+      <div *ngIf="users.length === 0 && !loading" class="alert alert-info">
+        Aucun utilisateur trouvé. Créez votre premier utilisateur ci-dessous.
+      </div>
+
+      <div *ngIf="users.length > 0" class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Email</th>
+              <th>Rôle</th>
+              <th>Département</th>
+              <th>Poste</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users">
+              <td>{{ user.name }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.role }}</td>
+              <td>{{ user.department }}</td>
+              <td>{{ user.position }}</td>
+              <td>
+                <button class="btn btn-sm btn-info me-2" (click)="editUser(user)">Modifier</button>
+                <button class="btn btn-sm btn-danger" (click)="user._id && deleteUser(user._id)">Supprimer</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulaire de création/modification d'utilisateur -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h3 class="mb-0">{{ isEditing ? 'Modifier un utilisateur' : 'Créer un utilisateur' }}</h3>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="isEditing ? updateUser() : addUser()">
+            <div class="mb-3">
+              <label for="name" class="form-label">Nom <span class="text-danger">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                [(ngModel)]="newUser.name"
+                name="name"
+                required
+                placeholder="Entrez le nom de l'utilisateur">
+            </div>
+            <div class="mb-3">
+              <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                [(ngModel)]="newUser.email"
+                name="email"
+                required
+                placeholder="Entrez l'email de l'utilisateur">
+            </div>
+            <div class="mb-3">
+              <label for="role" class="form-label">Rôle</label>
+              <select
+                class="form-select"
+                id="role"
+                [(ngModel)]="newUser.role"
+                name="role">
+                <option value="">Sélectionnez un rôle</option>
+                <option value="admin">Administrateur</option>
+                <option value="manager">Manager</option>
+                <option value="developer">Développeur</option>
+                <option value="designer">Designer</option>
+                <option value="tester">Testeur</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="department" class="form-label">Département</label>
+              <input
+                type="text"
+                class="form-control"
+                id="department"
+                [(ngModel)]="newUser.department"
+                name="department"
+                placeholder="Entrez le département de l'utilisateur">
+            </div>
+            <div class="mb-3">
+              <label for="position" class="form-label">Poste</label>
+              <input
+                type="text"
+                class="form-control"
+                id="position"
+                [(ngModel)]="newUser.position"
+                name="position"
+                placeholder="Entrez le poste de l'utilisateur">
+            </div>
+            <div class="d-flex">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="!newUser.name || !newUser.email || loading">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                {{ isEditing ? 'Mettre à jour' : 'Créer' }}
+              </button>
+              <button *ngIf="isEditing" type="button" class="btn btn-secondary ms-2" (click)="cancelEdit()">Annuler</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

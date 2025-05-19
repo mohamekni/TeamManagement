@@ -55,6 +55,33 @@ export class UserService {
     );
   }
 
+  /**
+   * Récupère les équipes dont l'utilisateur est membre
+   * @param userId ID de l'utilisateur
+   * @returns Observable contenant la liste des équipes
+   */
+  getUserTeams(userId: string): Observable<any[]> {
+    console.log(`Fetching teams for user with id ${userId}`);
+    return this.http.get<any[]>(`${this.apiUrl}/${userId}/teams`).pipe(
+      tap(data => console.log('User teams received:', data)),
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Vérifie si un utilisateur est membre d'une équipe spécifique
+   * @param userId ID de l'utilisateur
+   * @param teamId ID de l'équipe
+   * @returns Observable contenant un booléen
+   */
+  isUserMemberOfTeam(userId: string, teamId: string): Observable<boolean> {
+    console.log(`Checking if user ${userId} is member of team ${teamId}`);
+    return this.http.get<boolean>(`${this.apiUrl}/${userId}/teams/${teamId}`).pipe(
+      tap(data => console.log('User membership status:', data)),
+      catchError(this.handleError)
+    );
+  }
+
   private handleError(error: HttpErrorResponse) {
     let errorMessage = '';
 

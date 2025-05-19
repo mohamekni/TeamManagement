@@ -1,56 +1,132 @@
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Liste des Équipes</h2>
-    <button class="btn btn-primary" (click)="navigateToAddEquipe()">
-      <i class="bi bi-plus-circle"></i> Nouvelle Équipe
-    </button>
-  </div>
-
-  <!-- Message de chargement -->
-  <div *ngIf="loading" class="text-center">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Chargement...</span>
-    </div>
-    <p>Chargement des équipes...</p>
-  </div>
-
-  <!-- Message d'erreur -->
-  <div *ngIf="error" class="alert alert-danger">
-    {{ error }}
-    <button class="btn btn-sm btn-outline-danger ms-2" (click)="loadEquipes()">Réessayer</button>
-  </div>
-
-  <!-- Liste des équipes -->
-  <div *ngIf="!loading && !error && equipes.length === 0" class="alert alert-info">
-    Aucune équipe trouvée. Cliquez sur "Nouvelle Équipe" pour en créer une.
-  </div>
-
-  <div class="row row-cols-1 row-cols-md-3 g-4" *ngIf="equipes.length > 0">
-    <div class="col" *ngFor="let equipe of equipes">
-      <div class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title">{{ equipe.name }}</h5>
-          <p class="card-text">{{ equipe.description || 'Aucune description' }}</p>
-          <p class="card-text">
-            <small class="text-muted">
-              {{ equipe.members?.length || 0 }} membre(s)
-            </small>
-          </p>
+<div class="container-fluid py-5 bg-light">
+  <div class="container">
+    <!-- Header avec titre et bouton d'ajout -->
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h1 class="display-4 fw-bold text-primary">Équipes</h1>
+            <p class="text-muted lead">Gérez vos équipes et leurs membres</p>
+          </div>
+          <button class="btn btn-primary btn-lg rounded-pill shadow-sm" (click)="navigateToAddEquipe()">
+            <i class="bi bi-plus-circle me-2"></i> Nouvelle Équipe
+          </button>
         </div>
-        <div class="card-footer bg-transparent">
-          <div class="btn-group w-100">
-            <button class="btn btn-sm btn-outline-primary" (click)="equipe._id && navigateToEquipeDetail(equipe._id)">
-              <i class="bi bi-eye"></i> Détails
-            </button>
-            <button class="btn btn-sm btn-outline-secondary" (click)="equipe._id && navigateToEditEquipe(equipe._id)">
-              <i class="bi bi-pencil"></i> Modifier
-            </button>
-            <button class="btn btn-sm btn-outline-danger" (click)="equipe._id && deleteEquipe(equipe._id)">
-              <i class="bi bi-trash"></i> Supprimer
-            </button>
+        <hr class="my-4">
+      </div>
+    </div>
+
+    <!-- Message de chargement avec animation moderne -->
+    <div *ngIf="loading" class="row justify-content-center my-5">
+      <div class="col-md-6 text-center">
+        <div class="spinner-grow text-primary mx-1" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+        <div class="spinner-grow text-secondary mx-1" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+        <div class="spinner-grow text-primary mx-1" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+        <p class="mt-3 text-muted">Chargement des équipes...</p>
+      </div>
+    </div>
+
+    <!-- Message d'erreur avec style moderne -->
+    <div *ngIf="error" class="row justify-content-center my-5">
+      <div class="col-md-8">
+        <div class="alert alert-danger shadow-sm border-0 rounded-3 d-flex align-items-center">
+          <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
+          <div class="flex-grow-1">
+            {{ error }}
+          </div>
+          <button class="btn btn-danger rounded-pill ms-3" (click)="loadEquipes()">
+            <i class="bi bi-arrow-clockwise me-1"></i> Réessayer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message quand aucune équipe n'est trouvée -->
+    <div *ngIf="!loading && !error && equipes.length === 0" class="row justify-content-center my-5">
+      <div class="col-md-8 text-center">
+        <div class="p-5 bg-white rounded-3 shadow-sm">
+          <i class="bi bi-people fs-1 text-muted mb-3"></i>
+          <h3 class="mb-3">Aucune équipe trouvée</h3>
+          <p class="text-muted mb-4">Commencez par créer une nouvelle équipe pour organiser vos projets et membres.</p>
+          <button class="btn btn-primary rounded-pill px-4 py-2" (click)="navigateToAddEquipe()">
+            <i class="bi bi-plus-circle me-2"></i> Créer une équipe
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Liste des équipes avec design moderne en cartes -->
+    <div class="row g-4" *ngIf="equipes.length > 0">
+      <div class="col-md-4 col-lg-3" *ngFor="let equipe of equipes">
+        <div class="card h-100 border-0 shadow-sm rounded-3 hover-shadow transition">
+          <!-- En-tête de la carte avec couleur aléatoire -->
+          <div class="card-header bg-primary text-white rounded-top p-3">
+            <h5 class="card-title mb-0 text-truncate">{{ equipe.name }}</h5>
+          </div>
+
+          <div class="card-body p-4">
+            <!-- Description avec limite de caractères -->
+            <p class="card-text mb-4" style="min-height: 60px;">
+              {{ (equipe.description && equipe.description.length > 100) ?
+                 (equipe.description | slice:0:100) + '...' :
+                 (equipe.description || 'Aucune description') }}
+            </p>
+
+            <!-- Badge pour le nombre de membres -->
+            <div class="d-flex align-items-center mb-3">
+              <i class="bi bi-people-fill text-primary me-2"></i>
+              <span class="badge bg-light text-dark rounded-pill px-3 py-2 shadow-sm">
+                {{ equipe.members?.length || 0 }} membre(s)
+              </span>
+            </div>
+          </div>
+
+          <!-- Actions avec boutons modernes -->
+          <div class="card-footer bg-white border-0 p-3">
+            <div class="d-flex justify-content-between">
+              <button class="btn btn-sm btn-outline-primary rounded-pill"
+                      (click)="equipe._id && navigateToEquipeDetail(equipe._id)"
+                      title="Voir les détails">
+                <i class="bi bi-eye me-1"></i> Détails
+              </button>
+              <div>
+                <button class="btn btn-sm btn-outline-secondary rounded-circle me-2"
+                        (click)="equipe._id && navigateToEditEquipe(equipe._id)"
+                        title="Modifier l'équipe">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger rounded-circle"
+                        (click)="equipe._id && deleteEquipe(equipe._id)"
+                        title="Supprimer l'équipe">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Styles spécifiques pour cette page -->
+<style>
+  .hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+  }
+
+  .transition {
+    transition: all 0.3s ease;
+  }
+
+  .card-header.bg-primary {
+    background: linear-gradient(45deg, #007bff, #6610f2) !important;
+  }
+</style>

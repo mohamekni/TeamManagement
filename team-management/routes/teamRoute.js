@@ -78,7 +78,7 @@ router.get('/:id', async (req, res) => {
 
 // Mettre à jour une équipe par son ID
 /**
- * @desc Mise a jour dun equipe 
+ * @desc Mise a jour dun equipe
  * @route /
  * @Method PUT
  * @access public
@@ -101,6 +101,84 @@ router.put('/:id', async (req, res) => {
     await team.save();
     res.status(200).json(team);
     } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Ajouter un membre à une équipe
+/**
+ * @desc Add Member to Team
+ * @route /:id/members
+ * @Method POST
+ * @access public
+ */
+router.post('/:id/members', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { userId, role } = req.body;
+
+        console.log(`Adding member to team ${id}:`, req.body);
+
+        // Vérifier si l'équipe existe
+        const team = await Team.findById(id);
+        if (!team) {
+            return res.status(404).json({ message: "Équipe non trouvée" });
+        }
+
+        // Vérifier si le membre existe déjà dans l'équipe
+        if (team.members && team.members.includes(userId)) {
+            return res.status(400).json({ message: "Ce membre fait déjà partie de l'équipe" });
+        }
+
+        // Ajouter le membre à l'équipe
+        if (!team.members) {
+            team.members = [];
+        }
+        team.members.push(userId);
+
+        // Sauvegarder l'équipe mise à jour
+        await team.save();
+
+        res.status(200).json(team);
+    } catch (err) {
+        console.error('Error adding member to team:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Supprimer un membre d'une équipe
+/**
+ * @desc Remove Member from Team
+ * @route /:id/members/:memberId
+ * @Method DELETE
+ * @access public
+ */
+router.delete('/:id/members/:memberId', async (req, res) => {
+    try {
+        const { id, memberId } = req.params;
+
+        console.log(`Removing member ${memberId} from team ${id}`);
+
+        // Vérifier si l'équipe existe
+        const team = await Team.findById(id);
+        if (!team) {
+            return res.status(404).json({ message: "Équipe non trouvée" });
+        }
+
+        // Vérifier si le membre existe dans l'équipe
+        if (!team.members || !team.members.includes(memberId)) {
+            return res.status(404).json({ message: "Membre non trouvé dans l'équipe" });
+        }
+
+        // Supprimer le membre de l'équipe
+        team.members = team.members.filter(member => member !== memberId);
+
+        // Sauvegarder l'équipe mise à jour
+        await team.save();
+
+        res.status(200).json({ message: "Membre supprimé avec succès", team });
+    } catch (err) {
+        console.error('Error removing member from team:', err);
         res.status(500).json({ message: err.message });
     }
 });

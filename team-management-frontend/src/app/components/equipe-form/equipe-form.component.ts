@@ -33,6 +33,8 @@ export class EquipeFormComponent implements OnInit {
   error: string | null = null;
   equipeId: string | null = null;
   nameExists = false;
+  nameError = false;
+  descriptionError = false;
   checkingName = false;
   existingEquipes: Equipe[] = [];
   availableMembers: Membre[] = []; // Liste des membres disponibles
@@ -76,11 +78,30 @@ export class EquipeFormComponent implements OnInit {
 
       if (this.isEditMode && this.equipeId) {
         this.loadEquipe(this.equipeId);
+
+        // Ajouter un délai pour s'assurer que l'équipe est chargée
+        setTimeout(() => {
+          console.log('Après délai - this.equipeId:', this.equipeId);
+          console.log('Après délai - this.equipe:', this.equipe);
+        }, 1000);
       }
     } catch (error) {
       console.error('Error in ngOnInit:', error);
       this.error = 'Erreur d\'initialisation';
     }
+
+    // Ajouter un gestionnaire d'événements pour le bouton d'ajout de membre
+    setTimeout(() => {
+      const addButton = document.getElementById('addMembreButton');
+      if (addButton) {
+        console.log('Bouton d\'ajout de membre trouvé');
+        addButton.addEventListener('click', () => {
+          console.log('Bouton d\'ajout de membre cliqué');
+        });
+      } else {
+        console.log('Bouton d\'ajout de membre non trouvé');
+      }
+    }, 2000);
   }
 
   loadAllMembers(): void {
@@ -131,6 +152,10 @@ export class EquipeFormComponent implements OnInit {
         console.log('Équipe chargée:', data);
         this.equipe = data;
 
+        // Vérifier que l'ID est correctement défini
+        console.log('ID de l\'équipe après chargement:', this.equipe._id);
+        console.log('this.equipeId:', this.equipeId);
+
         // Si l'équipe a des membres, récupérer les informations de chaque membre
         if (this.equipe.members && this.equipe.members.length > 0) {
           this.loadMembersDetails();
@@ -152,12 +177,33 @@ export class EquipeFormComponent implements OnInit {
       return;
     }
 
-    // Pour chaque membre de l'équipe, essayer de trouver son nom dans la liste des utilisateurs
+    console.log('Chargement des détails des membres de l\'équipe...');
+
+    // Pour chaque membre de l'équipe, essayer de trouver ses informations dans la liste des utilisateurs
     this.equipe.members.forEach(membreId => {
       // Chercher d'abord dans la liste des utilisateurs
       const user = this.availableUsers.find(u => (u._id === membreId || u.id === membreId));
       if (user) {
         console.log(`Membre ${membreId} trouvé dans la liste des utilisateurs:`, user);
+
+        // Vérifier si toutes les informations nécessaires sont présentes
+        if (!user.email || (!user.profession && !user.role)) {
+          // Si des informations manquent, essayer de les récupérer depuis l'API
+          this.userService.getUser(membreId).subscribe({
+            next: (userData) => {
+              console.log(`Détails supplémentaires de l'utilisateur ${membreId} récupérés:`, userData);
+
+              // Mettre à jour l'utilisateur dans la liste avec les nouvelles informations
+              const index = this.availableUsers.findIndex(u => (u._id === membreId || u.id === membreId));
+              if (index !== -1) {
+                this.availableUsers[index] = { ...this.availableUsers[index], ...userData };
+              }
+            },
+            error: (error) => {
+              console.error(`Erreur lors de la récupération des détails supplémentaires de l'utilisateur ${membreId}:`, error);
+            }
+          });
+        }
       } else {
         // Si non trouvé, essayer de récupérer l'utilisateur depuis l'API
         this.userService.getUser(membreId).subscribe({
@@ -194,23 +240,55 @@ export class EquipeFormComponent implements OnInit {
     if (this.nameExists) {
       console.warn('Ce nom d\'équipe existe déjà');
     }
+
+    // Vérifier si le nom a au moins 3 caractères
+    this.nameError = value.length > 0 && value.length < 3;
+    if (this.nameError) {
+      console.warn('Le nom doit contenir au moins 3 caractères');
+    }
   }
 
   updateDescription(value: string): void {
     console.log('Description updated:', value);
     this.equipe.description = value;
+
+    // Vérifier si la description a au moins 10 caractères
+    this.descriptionError = value.length > 0 && value.length < 10;
+    if (this.descriptionError) {
+      console.warn('La description doit contenir au moins 10 caractères');
+    }
   }
 
   onSubmit(): void {
     console.log('Form submitted with:', this.equipe);
 
+    // Vérifier si le nom est présent et valide
     if (!this.equipe.name) {
       this.error = 'Le nom de l\'équipe est requis.';
       return;
     }
 
+    if (this.equipe.name.length < 3) {
+      this.nameError = true;
+      this.error = 'Le nom de l\'équipe doit contenir au moins 3 caractères.';
+      return;
+    }
+
+    // Vérifier si la description est présente et valide
+    if (!this.equipe.description) {
+      this.error = 'La description de l\'équipe est requise.';
+      return;
+    }
+
+    if (this.equipe.description.length < 10) {
+      this.descriptionError = true;
+      this.error = 'La description de l\'équipe doit contenir au moins 10 caractères.';
+      return;
+    }
+
     // Vérifier si le nom existe déjà avant de soumettre
     if (this.checkNameExists(this.equipe.name)) {
+      this.nameExists = true;
       this.error = 'Une équipe avec ce nom existe déjà. Veuillez choisir un autre nom.';
       return;
     }
@@ -273,10 +351,23 @@ export class EquipeFormComponent implements OnInit {
   }
 
   // Méthodes pour gérer les membres
-  addMembreToEquipe(membreId: string): void {
-    if (!this.equipeId || !membreId) {
+  addMembreToEquipe(membreId: string, role: string = 'membre'): void {
+    console.log('Début de addMembreToEquipe avec membreId:', membreId, 'et rôle:', role);
+    console.log('État actuel - this.equipeId:', this.equipeId);
+    console.log('État actuel - this.equipe:', this.equipe);
+
+    // Utiliser this.equipe._id si this.equipeId n'est pas défini
+    const equipeId = this.equipeId || (this.equipe && this.equipe._id);
+
+    console.log('equipeId calculé:', equipeId);
+
+    if (!equipeId || !membreId) {
       console.error('ID d\'équipe ou ID de membre manquant');
       this.error = 'ID d\'équipe ou ID de membre manquant';
+      console.log('equipeId:', equipeId, 'membreId:', membreId);
+
+      // Afficher un message à l'utilisateur
+      this.notificationService.showError('Impossible d\'ajouter le membre: ID d\'équipe ou ID de membre manquant');
       return;
     }
 
@@ -286,15 +377,29 @@ export class EquipeFormComponent implements OnInit {
       return;
     }
 
-    const membre: Membre = { id: membreId };
+    // Récupérer les informations de l'utilisateur pour afficher un message plus informatif
+    const user = this.availableUsers.find(u => u._id === membreId || u.id === membreId);
+    const userName = user ? (user.firstName && user.lastName ?
+                            `${user.firstName} ${user.lastName}` :
+                            user.name || membreId) :
+                            membreId;
+
+    // Créer l'objet membre avec le rôle spécifié
+    const membre: Membre = {
+      id: membreId,
+      role: role
+    };
+
     this.loading = true;
 
-    this.equipeService.addMembreToEquipe(this.equipeId, membre).subscribe({
+    console.log(`Ajout de l'utilisateur "${userName}" comme ${role} à l'équipe ${equipeId}`);
+
+    this.equipeService.addMembreToEquipe(equipeId, membre).subscribe({
       next: (response) => {
         console.log('Membre ajouté avec succès:', response);
-        this.notificationService.showSuccess('Membre ajouté avec succès à l\'équipe');
+        this.notificationService.showSuccess(`${userName} a été ajouté comme ${role === 'admin' ? 'administrateur' : 'membre'} à l'équipe`);
         // Recharger l'équipe pour mettre à jour la liste des membres
-        this.loadEquipe(this.equipeId!);
+        this.loadEquipe(equipeId);
         this.loading = false;
       },
       error: (error) => {
@@ -306,12 +411,16 @@ export class EquipeFormComponent implements OnInit {
     });
   }
 
-  // Méthode pour obtenir le nom d'un membre à partir de son ID
+  // Méthode pour obtenir le nom complet d'un membre à partir de son ID
   getMembreName(membreId: string): string {
     // Chercher d'abord dans la liste des utilisateurs
     const user = this.availableUsers.find(u => (u._id === membreId || u.id === membreId));
-    if (user && user.name) {
-      return user.name;
+    if (user) {
+      if (user.firstName && user.lastName) {
+        return `${user.firstName} ${user.lastName}`;
+      } else if (user.name) {
+        return user.name;
+      }
     }
 
     // Chercher ensuite dans la liste des membres
@@ -324,8 +433,40 @@ export class EquipeFormComponent implements OnInit {
     return membreId;
   }
 
+  // Méthode pour obtenir l'email d'un membre
+  getMembreEmail(membreId: string): string {
+    const user = this.availableUsers.find(u => (u._id === membreId || u.id === membreId));
+    if (user && user.email) {
+      return user.email;
+    }
+    return 'Non renseigné';
+  }
+
+  // Méthode pour obtenir la profession d'un membre
+  getMembreProfession(membreId: string): string {
+    const user = this.availableUsers.find(u => (u._id === membreId || u.id === membreId));
+    if (user) {
+      if (user.profession) {
+        return user.profession === 'etudiant' ? 'Étudiant' : 'Professeur';
+      } else if (user.role) {
+        return user.role === 'etudiant' ? 'Étudiant' : 'Professeur';
+      }
+    }
+    return 'Non spécifié';
+  }
+
+  // Méthode pour obtenir le rôle d'un membre dans l'équipe
+  getMembreRole(membreId: string): string {
+    // Cette méthode nécessiterait d'avoir accès aux rôles des membres dans l'équipe
+    // Pour l'instant, nous retournons une valeur par défaut
+    return 'Membre';
+  }
+
   removeMembreFromEquipe(membreId: string): void {
-    if (!this.equipeId) {
+    // Utiliser this.equipe._id si this.equipeId n'est pas défini
+    const equipeId = this.equipeId || this.equipe._id;
+
+    if (!equipeId) {
       console.error('ID d\'équipe manquant');
       this.error = 'ID d\'équipe manquant';
       return;
@@ -337,12 +478,14 @@ export class EquipeFormComponent implements OnInit {
     if (confirm(`Êtes-vous sûr de vouloir retirer ${membreName} de l'équipe?`)) {
       this.loading = true;
 
-      this.equipeService.removeMembreFromEquipe(this.equipeId, membreId).subscribe({
+      console.log(`Retrait du membre ${membreId} (${membreName}) de l'équipe ${equipeId}`);
+
+      this.equipeService.removeMembreFromEquipe(equipeId, membreId).subscribe({
         next: (response) => {
           console.log('Membre retiré avec succès:', response);
           this.notificationService.showSuccess(`${membreName} a été retiré avec succès de l'équipe`);
           // Recharger l'équipe pour mettre à jour la liste des membres
-          this.loadEquipe(this.equipeId!);
+          this.loadEquipe(equipeId);
           this.loading = false;
         },
         error: (error) => {

@@ -2,29 +2,53 @@ const mongoose = require('mongoose');
 
 // Définition du schéma utilisateur
 const userSchema = new mongoose.Schema({
-  name: {
+  // Champs principaux selon les besoins
+  id: {
+    type: String,
+    trim: true,
+    required: [true, 'L\'ID est requis'],
+    unique: true
+  },
+  firstName: {
+    type: String,
+    required: [true, 'Le prénom est requis'],
+    trim: true
+  },
+  lastName: {
     type: String,
     required: [true, 'Le nom est requis'],
     trim: true
   },
+  profession: {
+    type: String,
+    enum: ['etudiant', 'professeur'],
+    required: [true, 'La profession est requise'],
+    default: 'etudiant'
+  },
+  // Garder role pour la compatibilité
+  role: {
+    type: String,
+    enum: ['etudiant', 'professeur', 'admin', 'manager', 'developer', 'designer', 'tester', ''],
+    default: ''
+  },
+  dateOfBirth: {
+    type: Date
+  },
+
+  // Champs existants pour la compatibilité
+  name: {
+    type: String,
+    trim: true
+  },
   email: {
     type: String,
-    required: [true, 'L\'email est requis'],
-    unique: true,
     trim: true,
-    lowercase: true,
-    // Validation d'email désactivée temporairement
-    // match: [/.+@.+\..+/, 'Veuillez fournir un email valide']
+    lowercase: true
   },
   password: {
     type: String,
     required: false,
     minlength: [6, 'Le mot de passe doit contenir au moins 6 caractères']
-  },
-  role: {
-    type: String,
-    enum: ['admin', 'manager', 'developer', 'designer', 'tester', ''],
-    default: ''
   },
   department: {
     type: String,

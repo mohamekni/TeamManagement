@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, tap, map } from 'rxjs/operators';
 import { Equipe } from '../models/equipe.model';
 import { environment } from '../../environments/environment';
 
@@ -57,7 +57,19 @@ export class EquipeService {
 
   addMembreToEquipe(teamId: string, membre: any): Observable<any> {
     console.log(`Adding member to team ${teamId}:`, membre);
-    return this.http.post<any>(`${this.apiUrl}/${teamId}/members`, membre).pipe(
+
+    // Créer l'objet attendu par le backend
+    const memberData = {
+      userId: membre.id,
+      role: membre.role || "membre" // Utiliser le rôle spécifié ou "membre" par défaut
+    };
+
+    console.log('Sending to backend:', memberData);
+    console.log('Team ID type:', typeof teamId, 'value:', teamId);
+    console.log('User ID type:', typeof membre.id, 'value:', membre.id);
+
+    // Utiliser la route directe pour ajouter un membre à une équipe
+    return this.http.post<any>(`${this.apiUrl}/${teamId}/members`, memberData).pipe(
       tap(data => console.log('Member added, response:', data)),
       catchError(this.handleError)
     );
@@ -65,8 +77,36 @@ export class EquipeService {
 
   removeMembreFromEquipe(teamId: string, membreId: string): Observable<any> {
     console.log(`Removing member ${membreId} from team ${teamId}`);
+
+    // Utiliser la route directe pour supprimer un membre d'une équipe
     return this.http.delete<any>(`${this.apiUrl}/${teamId}/members/${membreId}`).pipe(
       tap(data => console.log('Member removed, response:', data)),
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Récupère les détails des membres d'une équipe
+   * @param teamId ID de l'équipe
+   * @returns Observable contenant la liste des membres avec leurs détails
+   */
+  getTeamMembers(teamId: string): Observable<any[]> {
+    console.log(`Fetching team members for team ${teamId}`);
+    // Utiliser la route de l'équipe pour récupérer les détails de l'équipe, qui contient les membres
+    return this.http.get<any>(`${this.apiUrl}/${teamId}`).pipe(
+      map(team => {
+        console.log('Team data received:', team);
+        // Transformer les IDs des membres en objets avec l'ID et le rôle
+        if (team && team.members) {
+          return team.members.map((memberId: string) => ({
+            user: memberId,
+            role: 'membre', // Par défaut, tous les membres ont le rôle "membre"
+            _id: memberId   // Utiliser l'ID du membre comme ID du TeamMember
+          }));
+        }
+        return [];
+      }),
+      tap(data => console.log('Team members processed:', data)),
       catchError(this.handleError)
     );
   }

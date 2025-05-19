@@ -1,140 +1,425 @@
-<div class="container mt-4">
-  <!-- Message d'erreur -->
-  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
-    {{ error }}
-    <button type="button" class="btn-close" (click)="error = null" aria-label="Close"></button>
-  </div>
-
-  <!-- Indicateur de chargement -->
-  <div *ngIf="loading" class="d-flex justify-content-center mb-4">
-    <div class="spinner-border text-primary" role="status">
-      <span class="visually-hidden">Chargement...</span>
-    </div>
-  </div>
-
-  <!-- Liste des utilisateurs -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Liste des utilisateurs</h2>
-        <button class="btn btn-sm btn-outline-primary" (click)="loadUsers()">
-          <i class="bi bi-arrow-clockwise"></i> Rafraîchir
-        </button>
-      </div>
-
-      <div *ngIf="users.length === 0 && !loading" class="alert alert-info">
-        Aucun utilisateur trouvé. Créez votre premier utilisateur ci-dessous.
-      </div>
-
-      <div *ngIf="users.length > 0" class="table-responsive">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Email</th>
-              <th>Rôle</th>
-              <th>Département</th>
-              <th>Poste</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let user of users">
-              <td>{{ user.name }}</td>
-              <td>{{ user.email }}</td>
-              <td>{{ user.role }}</td>
-              <td>{{ user.department }}</td>
-              <td>{{ user.position }}</td>
-              <td>
-                <button class="btn btn-sm btn-info me-2" (click)="editUser(user)">Modifier</button>
-                <button class="btn btn-sm btn-danger" (click)="user._id && deleteUser(user._id)">Supprimer</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Formulaire de création/modification d'utilisateur -->
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="card">
-        <div class="card-header bg-primary text-white">
-          <h3 class="mb-0">{{ isEditing ? 'Modifier un utilisateur' : 'Créer un utilisateur' }}</h3>
+<div class="container-fluid py-5 bg-light">
+  <div class="container">
+    <!-- En-tête avec titre et description -->
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h1 class="display-4 fw-bold text-primary">Utilisateurs</h1>
+            <p class="text-muted lead">Gérez les membres de vos équipes</p>
+          </div>
+          <button class="btn btn-primary btn-lg rounded-pill shadow-sm" (click)="scrollToForm()">
+            <i class="bi bi-person-plus-fill me-2"></i> Nouvel Utilisateur
+          </button>
         </div>
-        <div class="card-body">
-          <form (ngSubmit)="isEditing ? updateUser() : addUser()">
-            <div class="mb-3">
-              <label for="name" class="form-label">Nom <span class="text-danger">*</span></label>
-              <input
-                type="text"
-                class="form-control"
-                id="name"
-                [(ngModel)]="newUser.name"
-                name="name"
-                required
-                placeholder="Entrez le nom de l'utilisateur">
-            </div>
-            <div class="mb-3">
-              <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-              <input
-                type="email"
-                class="form-control"
-                id="email"
-                [(ngModel)]="newUser.email"
-                name="email"
-                required
-                placeholder="Entrez l'email de l'utilisateur">
-            </div>
-            <div class="mb-3">
-              <label for="role" class="form-label">Rôle</label>
-              <select
-                class="form-select"
-                id="role"
-                [(ngModel)]="newUser.role"
-                name="role">
-                <option value="">Sélectionnez un rôle</option>
-                <option value="admin">Administrateur</option>
-                <option value="manager">Manager</option>
-                <option value="developer">Développeur</option>
-                <option value="designer">Designer</option>
-                <option value="tester">Testeur</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="department" class="form-label">Département</label>
-              <input
-                type="text"
-                class="form-control"
-                id="department"
-                [(ngModel)]="newUser.department"
-                name="department"
-                placeholder="Entrez le département de l'utilisateur">
-            </div>
-            <div class="mb-3">
-              <label for="position" class="form-label">Poste</label>
-              <input
-                type="text"
-                class="form-control"
-                id="position"
-                [(ngModel)]="newUser.position"
-                name="position"
-                placeholder="Entrez le poste de l'utilisateur">
-            </div>
-            <div class="d-flex">
-              <button
-                type="submit"
-                class="btn btn-primary"
-                [disabled]="!newUser.name || !newUser.email || loading">
-                <span *ngIf="loading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                {{ isEditing ? 'Mettre à jour' : 'Créer' }}
+        <hr class="my-4">
+      </div>
+    </div>
+
+    <!-- Message d'erreur avec style moderne -->
+    <div *ngIf="error" class="row mb-4">
+      <div class="col-12">
+        <div class="alert alert-danger shadow-sm border-0 rounded-3 d-flex align-items-center">
+          <i class="bi bi-exclamation-triangle-fill fs-3 me-3"></i>
+          <div class="flex-grow-1">{{ error }}</div>
+          <button type="button" class="btn-close ms-2" (click)="error = null" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Indicateur de chargement avec animation moderne -->
+    <div *ngIf="loading" class="row justify-content-center my-5">
+      <div class="col-md-6 text-center">
+        <div class="spinner-grow text-primary mx-1" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+        <div class="spinner-grow text-secondary mx-1" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+        <div class="spinner-grow text-primary mx-1" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+        <p class="mt-3 text-muted">Chargement des utilisateurs...</p>
+      </div>
+    </div>
+
+    <!-- Liste des utilisateurs avec design moderne -->
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-3">
+          <div class="card-header bg-white border-0 py-3">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+              <h3 class="card-title mb-0">
+                <i class="bi bi-people-fill text-primary me-2"></i>
+                Liste des utilisateurs
+              </h3>
+              <button class="btn btn-outline-primary rounded-pill" (click)="loadUsers()">
+                <i class="bi bi-arrow-clockwise me-1"></i> Rafraîchir
               </button>
-              <button *ngIf="isEditing" type="button" class="btn btn-secondary ms-2" (click)="cancelEdit()">Annuler</button>
             </div>
-          </form>
+          </div>
+
+          <div class="card-body">
+            <!-- Barre de recherche et filtres avec design moderne -->
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <div class="input-group shadow-sm rounded-pill overflow-hidden">
+                  <span class="input-group-text border-0 bg-light">
+                    <i class="bi bi-search text-primary"></i>
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control border-0 bg-light"
+                    placeholder="Rechercher par nom, prénom..."
+                    [(ngModel)]="searchTerm"
+                    name="searchTerm"
+                    (input)="applyFilters()">
+                  <button
+                    class="btn btn-light border-0"
+                    type="button"
+                    *ngIf="searchTerm"
+                    (click)="clearSearch()">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <select class="form-select shadow-sm rounded-pill"
+                        [(ngModel)]="professionFilter"
+                        name="professionFilter"
+                        (change)="applyFilters()">
+                  <option value="">Toutes les professions</option>
+                  <option value="etudiant">Étudiants</option>
+                  <option value="professeur">Professeurs</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <button class="btn btn-outline-secondary rounded-pill w-100 shadow-sm" (click)="resetFilters()">
+                  <i class="bi bi-arrow-counterclockwise me-1"></i> Réinitialiser
+                </button>
+              </div>
+            </div>
+
+            <!-- Message quand aucun utilisateur n'est trouvé -->
+            <div *ngIf="filteredUsers.length === 0 && !loading" class="text-center py-5">
+              <div *ngIf="users.length === 0" class="py-4">
+                <i class="bi bi-person-x fs-1 text-muted mb-3 d-block"></i>
+                <h4 class="text-muted">Aucun utilisateur trouvé</h4>
+                <p class="text-muted mb-4">Commencez par créer votre premier utilisateur ci-dessous.</p>
+                <button class="btn btn-primary rounded-pill px-4 py-2" (click)="scrollToForm()">
+                  <i class="bi bi-person-plus me-2"></i> Créer un utilisateur
+                </button>
+              </div>
+              <div *ngIf="users.length > 0" class="py-4">
+                <i class="bi bi-search fs-1 text-muted mb-3 d-block"></i>
+                <h4 class="text-muted">Aucun résultat trouvé</h4>
+                <p class="text-muted">Aucun utilisateur ne correspond aux critères de recherche.</p>
+                <button class="btn btn-outline-secondary rounded-pill mt-2" (click)="resetFilters()">
+                  <i class="bi bi-arrow-counterclockwise me-2"></i> Réinitialiser les filtres
+                </button>
+              </div>
+            </div>
+
+            <!-- Tableau des utilisateurs avec design moderne -->
+            <div *ngIf="filteredUsers.length > 0" class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th class="rounded-start">
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-fingerprint text-primary me-2"></i> ID
+                      </div>
+                    </th>
+                    <th>
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-person text-primary me-2"></i> Prénom
+                      </div>
+                    </th>
+                    <th>
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-person-vcard text-primary me-2"></i> Nom
+                      </div>
+                    </th>
+                    <th>
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-envelope text-primary me-2"></i> Email
+                      </div>
+                    </th>
+                    <th>
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-briefcase text-primary me-2"></i> Profession
+                      </div>
+                    </th>
+                    <th>
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-calendar-date text-primary me-2"></i> Date de naissance
+                      </div>
+                    </th>
+                    <th class="rounded-end text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let user of filteredUsers" class="transition hover-row">
+                    <td class="text-muted small">{{ user.id }}</td>
+                    <td class="fw-medium">{{ user.firstName || (user.name ? user.name.split(' ')[0] : '') }}</td>
+                    <td>{{ user.lastName || (user.name ? user.name.split(' ').slice(1).join(' ') : '') }}</td>
+                    <td>
+                      <a *ngIf="user.email" href="mailto:{{ user.email }}" class="text-decoration-none">
+                        {{ user.email }}
+                      </a>
+                      <span *ngIf="!user.email" class="text-muted fst-italic">Non renseigné</span>
+                    </td>
+                    <td>
+                      <span class="badge rounded-pill px-3 py-2 shadow-sm" [ngClass]="{
+                        'bg-primary': user.profession === 'etudiant' || user.role === 'etudiant',
+                        'bg-success': user.profession === 'professeur' || user.role === 'professeur'
+                      }">
+                        <i class="bi" [ngClass]="{
+                          'bi-mortarboard-fill': user.profession === 'etudiant' || user.role === 'etudiant',
+                          'bi-briefcase-fill': user.profession === 'professeur' || user.role === 'professeur'
+                        }"></i>
+                        {{ (user.profession === 'etudiant' || user.role === 'etudiant') ? 'Étudiant' : 'Professeur' }}
+                      </span>
+                    </td>
+                    <td>{{ user.dateOfBirth | date:'dd/MM/yyyy' }}</td>
+                    <td>
+                      <div class="d-flex justify-content-center gap-2">
+                        <button class="btn btn-sm btn-outline-primary rounded-circle"
+                                title="Modifier"
+                                (click)="editUser(user)">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger rounded-circle"
+                                title="Supprimer"
+                                (click)="user._id && deleteUser(user._id)">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulaire de création/modification d'utilisateur avec design moderne -->
+  <div class="container mb-5" id="userForm">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+          <div class="card-header bg-gradient-primary text-white border-0 py-4">
+            <h3 class="mb-0">
+              <i class="bi" [ngClass]="{'bi-person-plus-fill': !isEditing, 'bi-person-gear': isEditing}"></i>
+              {{ isEditing ? 'Modifier un utilisateur' : 'Créer un utilisateur' }}
+            </h3>
+            <p class="mb-0 mt-2 opacity-75">
+              {{ isEditing ? 'Modifiez les informations de l\'utilisateur' : 'Remplissez le formulaire pour créer un nouvel utilisateur' }}
+            </p>
+          </div>
+
+          <div class="card-body p-4">
+            <form (ngSubmit)="isEditing ? updateUser() : addUser()" class="row g-3">
+              <!-- Champ ID caché, généré automatiquement -->
+              <div class="col-12" *ngIf="isEditing">
+                <label for="id" class="form-label fw-medium">ID</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-0">
+                    <i class="bi bi-fingerprint text-primary"></i>
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control bg-light border-0"
+                    id="id"
+                    [(ngModel)]="newUser.id"
+                    name="id"
+                    readonly
+                    disabled>
+                </div>
+                <small class="form-text text-muted">L'ID est généré automatiquement et ne peut pas être modifié.</small>
+              </div>
+
+              <!-- Message informatif pour la création -->
+              <div class="col-12" *ngIf="!isEditing">
+                <div class="alert alert-info border-0 rounded-3 shadow-sm d-flex align-items-center">
+                  <i class="bi bi-info-circle-fill fs-4 me-3 text-primary"></i>
+                  <div>Un ID unique sera généré automatiquement à partir du prénom et du nom.</div>
+                </div>
+              </div>
+
+              <!-- Prénom et Nom sur la même ligne -->
+              <div class="col-md-6">
+                <label for="firstName" class="form-label fw-medium">Prénom <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-0">
+                    <i class="bi bi-person text-primary"></i>
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control bg-light border-0"
+                    id="firstName"
+                    [(ngModel)]="newUser.firstName"
+                    name="firstName"
+                    required
+                    minlength="3"
+                    #firstName="ngModel"
+                    [class.is-invalid]="firstName.invalid && (firstName.dirty || firstName.touched)"
+                    placeholder="Prénom">
+                </div>
+                <div *ngIf="firstName.invalid && (firstName.dirty || firstName.touched)" class="invalid-feedback d-block small">
+                  <div *ngIf="firstName.errors?.['required']">Le prénom est requis.</div>
+                  <div *ngIf="firstName.errors?.['minlength']">Le prénom doit contenir au moins 3 caractères.</div>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="lastName" class="form-label fw-medium">Nom <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-0">
+                    <i class="bi bi-person-vcard text-primary"></i>
+                  </span>
+                  <input
+                    type="text"
+                    class="form-control bg-light border-0"
+                    id="lastName"
+                    [(ngModel)]="newUser.lastName"
+                    name="lastName"
+                    required
+                    minlength="3"
+                    #lastName="ngModel"
+                    [class.is-invalid]="lastName.invalid && (lastName.dirty || lastName.touched)"
+                    placeholder="Nom">
+                </div>
+                <div *ngIf="lastName.invalid && (lastName.dirty || lastName.touched)" class="invalid-feedback d-block small">
+                  <div *ngIf="lastName.errors?.['required']">Le nom est requis.</div>
+                  <div *ngIf="lastName.errors?.['minlength']">Le nom doit contenir au moins 3 caractères.</div>
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div class="col-12">
+                <label for="email" class="form-label fw-medium">Email</label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-0">
+                    <i class="bi bi-envelope text-primary"></i>
+                  </span>
+                  <input
+                    type="email"
+                    class="form-control bg-light border-0"
+                    id="email"
+                    [(ngModel)]="newUser.email"
+                    name="email"
+                    #email="ngModel"
+                    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                    [class.is-invalid]="email.invalid && (email.dirty || email.touched) && email.value"
+                    placeholder="exemple@domaine.com">
+                </div>
+                <div *ngIf="email.invalid && (email.dirty || email.touched) && email.value" class="invalid-feedback d-block small">
+                  <div *ngIf="email.errors?.['pattern']">Veuillez entrer une adresse email valide.</div>
+                </div>
+                <small class="form-text text-muted">L'email est optionnel mais recommandé pour les communications.</small>
+              </div>
+
+              <!-- Profession et Date de naissance sur la même ligne -->
+              <div class="col-md-6">
+                <label for="profession" class="form-label fw-medium">Profession <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-0">
+                    <i class="bi bi-briefcase text-primary"></i>
+                  </span>
+                  <select
+                    class="form-select bg-light border-0"
+                    id="profession"
+                    [(ngModel)]="newUser.profession"
+                    name="profession"
+                    required>
+                    <option value="etudiant">Étudiant</option>
+                    <option value="professeur">Professeur</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <label for="dateOfBirth" class="form-label fw-medium">Date de naissance <span class="text-danger">*</span></label>
+                <div class="input-group">
+                  <span class="input-group-text bg-light border-0">
+                    <i class="bi bi-calendar-date text-primary"></i>
+                  </span>
+                  <input
+                    type="date"
+                    class="form-control bg-light border-0"
+                    id="dateOfBirth"
+                    [(ngModel)]="newUser.dateOfBirth"
+                    name="dateOfBirth"
+                    required
+                    #dateOfBirth="ngModel"
+                    [max]="maxDate"
+                    [class.is-invalid]="dateOfBirth.invalid && (dateOfBirth.dirty || dateOfBirth.touched)">
+                </div>
+                <div *ngIf="dateOfBirth.invalid && (dateOfBirth.dirty || dateOfBirth.touched)" class="invalid-feedback d-block small">
+                  <div *ngIf="dateOfBirth.errors?.['required']">La date de naissance est requise.</div>
+                  <div *ngIf="dateOfBirth.errors?.['max']">La date de naissance doit être antérieure au 01/01/2005.</div>
+                </div>
+                <small class="form-text text-muted">La date de naissance doit être antérieure au 01/01/2005.</small>
+              </div>
+
+              <!-- Boutons d'action -->
+              <div class="col-12 mt-4">
+                <div class="d-flex gap-2">
+                  <button
+                    type="submit"
+                    class="btn btn-primary rounded-pill px-4 py-2 shadow-sm"
+                    [disabled]="firstName?.invalid || lastName?.invalid || (email?.value && email?.invalid) || dateOfBirth?.invalid || loading">
+                    <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <i *ngIf="!loading" class="bi" [ngClass]="{'bi-person-plus': !isEditing, 'bi-check-lg': isEditing}"></i>
+                    {{ isEditing ? 'Mettre à jour' : 'Créer l\'utilisateur' }}
+                  </button>
+                  <button *ngIf="isEditing" type="button" class="btn btn-outline-secondary rounded-pill px-4" (click)="cancelEdit()">
+                    <i class="bi bi-x-lg me-1"></i> Annuler
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Styles spécifiques pour cette page -->
+<style>
+  /* Fond dégradé pour l'en-tête du formulaire */
+  .bg-gradient-primary {
+    background: linear-gradient(45deg, #007bff, #6610f2) !important;
+  }
+
+  /* Animation au survol des lignes du tableau */
+  .transition {
+    transition: all 0.2s ease;
+  }
+
+  .hover-row:hover {
+    background-color: rgba(13, 110, 253, 0.05) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Style pour les inputs */
+  .form-control:focus, .form-select:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  }
+
+  /* Animation pour les boutons */
+  .btn {
+    transition: all 0.3s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+</style>

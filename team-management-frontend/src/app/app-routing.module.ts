@@ -21,7 +21,7 @@ const routes: Routes = [
       { path: 'ajouter', component: EquipeFormComponent },
 
       // Formulaire pour modifier une équipe existante
-      { path: 'c/:id', component: EquipeFormComponent },
+      { path: 'modifier/:id', component: EquipeFormComponent },
 
       // Détails d'une équipe spécifique
       { path: 'detail/:id', component: EquipeDetailComponent }

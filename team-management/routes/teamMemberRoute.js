@@ -15,13 +15,34 @@ router.get('/', async (req, res) => {
 });
 
 
+// Récupérer tous les membres d'une équipe spécifique
+router.get('/team/:teamId', async (req, res) => {
+    try {
+        const { teamId } = req.params;
+
+        // Vérifier si l'ID est présent
+        if (!teamId) {
+            return res.status(400).json({ message: "ID d'équipe manquant." });
+        }
+
+        // Chercher tous les membres de cette équipe
+        const members = await TeamMember.find({ team: teamId }).populate('user');
+
+        // Renvoyer la liste des membres
+        res.status(200).json(members);
+    } catch (err) {
+        // Gérer les erreurs
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Récupérer un membre spécifique par ID avec les informations de l'équipe
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        // Vérifier si l'ID est valide
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "ID invalide." });
+        // Vérifier si l'ID est présent
+        if (!id) {
+            return res.status(400).json({ message: "ID manquant." });
         }
         // Chercher le membre dans la base de données et inclure les informations de l'équipe
         const member = await TeamMember.findById(id).populate('team');
@@ -40,11 +61,15 @@ router.get('/:id', async (req, res) => {
 // Vérifier si le membre existe déjà dans l'équipe avant de l'ajouter
 router.post('/', async (req, res) => {
     try {
+        console.log('Received request body:', req.body);
         const { team, user, role, userType } = req.body;
+        console.log('Extracted data:', { team, user, role, userType });
+        console.log('Team ID type:', typeof team, 'value:', team);
+        console.log('User ID type:', typeof user, 'value:', user);
 
-        // Vérifier si les IDs sont valides
-        if (!mongoose.Types.ObjectId.isValid(team) || !mongoose.Types.ObjectId.isValid(user)) {
-            return res.status(400).json({ message: "ID de l'équipe ou de l'utilisateur invalide." });
+        // Vérifier si les IDs sont présents
+        if (!team || !user) {
+            return res.status(400).json({ message: "ID de l'équipe ou de l'utilisateur manquant." });
         }
 
         // Vérifier si le rôle est valide (admin ou membre)
@@ -75,8 +100,8 @@ router.post('/', async (req, res) => {
 
         // Ajouter le nouveau membre avec les données correctes
         const newMember = new TeamMember({
-            team: new mongoose.Types.ObjectId(team),
-            user: new mongoose.Types.ObjectId(user),
+            team: team,
+            user: user,
             role,
             userType
         });
@@ -98,9 +123,9 @@ router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Vérification si l'ID est valide
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "ID invalide." });
+        // Vérification si l'ID est présent
+        if (!id) {
+            return res.status(400).json({ message: "ID manquant." });
         }
 
         // Chercher le membre à supprimer

@@ -16,9 +16,10 @@ export class EquipeDetailComponent implements OnInit {
   loading = false;
   error: string | null = null;
   equipeId: string | null = null;
-  newMembre: any = { id: '' };
+  newMembre: any = { id: '', role: 'membre' };
   availableUsers: User[] = [];
   memberNames: { [key: string]: string } = {}; // Map pour stocker les noms des membres
+  teamMembers: any[] = []; // Liste des membres de l'équipe avec leurs détails
 
   constructor(
     private equipeService: EquipeService,
@@ -89,6 +90,19 @@ export class EquipeDetailComponent implements OnInit {
     return this.memberNames[membreId] || membreId;
   }
 
+  // Méthode pour obtenir le nom d'un utilisateur à partir de son ID
+  getUserName(userId: string): string {
+    const user = this.availableUsers.find(u => u._id === userId || u.id === userId);
+    if (user) {
+      if (user.firstName && user.lastName) {
+        return `${user.firstName} ${user.lastName}`;
+      } else if (user.name) {
+        return user.name;
+      }
+    }
+    return userId;
+  }
+
   loadEquipe(id: string): void {
     this.loading = true;
     this.error = null;
@@ -97,6 +111,9 @@ export class EquipeDetailComponent implements OnInit {
       next: (data) => {
         console.log('Détails de l\'équipe chargés:', data);
         this.equipe = data;
+
+        // Charger les détails des membres de l'équipe
+        this.loadTeamMembers(id);
 
         // Mettre à jour les noms des membres
         if (this.equipe && this.equipe.members && this.equipe.members.length > 0) {
@@ -113,6 +130,19 @@ export class EquipeDetailComponent implements OnInit {
     });
   }
 
+  // Méthode pour charger les détails des membres de l'équipe
+  loadTeamMembers(teamId: string): void {
+    this.equipeService.getTeamMembers(teamId).subscribe({
+      next: (members) => {
+        console.log('Détails des membres chargés:', members);
+        this.teamMembers = members;
+      },
+      error: (error) => {
+        console.error('Erreur lors du chargement des détails des membres:', error);
+      }
+    });
+  }
+
   navigateToEditEquipe(): void {
     if (this.equipeId) {
       this.router.navigate(['/equipes/modifier', this.equipeId]);
@@ -123,25 +153,56 @@ export class EquipeDetailComponent implements OnInit {
     this.router.navigate(['/equipes/liste']);
   }
 
+  // Méthode pour ajouter un membre à l'équipe
+  addMembre(userId: string, role: string): void {
+    console.log(`Ajout de l'utilisateur ${userId} avec le rôle ${role}`);
+
+    if (!this.equipeId || !userId) {
+      console.error('ID d\'équipe ou ID d\'utilisateur manquant');
+      this.error = 'ID d\'équipe ou ID d\'utilisateur manquant';
+      return;
+    }
+
+    // Vérifier si l'utilisateur est déjà membre de l'équipe
+    const isAlreadyMember = this.teamMembers.some(m => m.user === userId);
+    if (isAlreadyMember) {
+      this.error = 'Cet utilisateur est déjà membre de l\'équipe';
+      return;
+    }
+
+    // Créer l'objet membre avec le rôle spécifié
+    const membre: Membre = {
+      id: userId,
+      role: role || 'membre'
+    };
+
+    // Récupérer les informations de l'utilisateur pour afficher un message plus informatif
+    const userName = this.getUserName(userId);
+    const roleName = role === 'admin' ? 'administrateur' : 'membre';
+
+    this.equipeService.addMembreToEquipe(this.equipeId, membre).subscribe({
+      next: (response) => {
+        console.log(`Utilisateur "${userName}" ajouté comme ${roleName} avec succès:`, response);
+        // Recharger les membres de l'équipe
+        this.loadTeamMembers(this.equipeId!);
+        // Recharger l'équipe pour mettre à jour la liste des membres
+        this.loadEquipe(this.equipeId!);
+      },
+      error: (error) => {
+        console.error('Erreur lors de l\'ajout de l\'utilisateur comme membre:', error);
+        this.error = `Impossible d'ajouter l'utilisateur "${userName}" comme ${roleName}. Veuillez réessayer plus tard.`;
+      }
+    });
+  }
+
+  // Ancienne méthode maintenue pour compatibilité
   addMembreToEquipe(): void {
     if (!this.equipeId || !this.newMembre.id) {
       console.error('ID d\'équipe ou ID de membre manquant');
       return;
     }
 
-    const membre: Membre = { id: this.newMembre.id };
-
-    this.equipeService.addMembreToEquipe(this.equipeId, membre).subscribe({
-      next: () => {
-        console.log('Membre ajouté avec succès');
-        this.loadEquipe(this.equipeId!);
-        this.newMembre = { id: '' };
-      },
-      error: (error) => {
-        console.error('Erreur lors de l\'ajout du membre:', error);
-        this.error = 'Impossible d\'ajouter le membre. Veuillez réessayer plus tard.';
-      }
-    });
+    this.addMembre(this.newMembre.id, this.newMembre.role || 'membre');
   }
 
   removeMembreFromEquipe(membreId: string): void {
@@ -150,15 +211,18 @@ export class EquipeDetailComponent implements OnInit {
       return;
     }
 
-    if (confirm('Êtes-vous sûr de vouloir retirer ce membre de l\'équipe?')) {
+    // Récupérer le nom de l'utilisateur pour un message plus informatif
+    const userName = this.getMembreName(membreId);
+
+    if (confirm(`Êtes-vous sûr de vouloir retirer l'utilisateur "${userName}" de l'équipe?`)) {
       this.equipeService.removeMembreFromEquipe(this.equipeId, membreId).subscribe({
         next: () => {
-          console.log('Membre retiré avec succès');
+          console.log(`Utilisateur "${userName}" retiré avec succès de l'équipe`);
           this.loadEquipe(this.equipeId!);
         },
         error: (error) => {
-          console.error('Erreur lors du retrait du membre:', error);
-          this.error = 'Impossible de retirer le membre. Veuillez réessayer plus tard.';
+          console.error(`Erreur lors du retrait de l'utilisateur "${userName}":`, error);
+          this.error = `Impossible de retirer l'utilisateur "${userName}" de l'équipe. Veuillez réessayer plus tard.`;
         }
       });
     }

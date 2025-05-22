@@ -45,8 +45,21 @@ export class EquipeDetailComponent implements OnInit {
   loadUsers(): void {
     this.userService.getUsers().subscribe({
       next: (users) => {
-        this.availableUsers = users;
-        console.log('Utilisateurs chargés:', users);
+        // Stocker tous les utilisateurs pour la recherche de noms
+        const allUsers = [...users];
+        console.log('Tous les utilisateurs chargés:', allUsers);
+
+        // Filtrer les utilisateurs disponibles (non membres de l'équipe)
+        if (this.teamMembers && this.teamMembers.length > 0) {
+          const memberUserIds = this.teamMembers.map(m => m.user);
+          this.availableUsers = users.filter(user =>
+            !memberUserIds.includes(user._id || user.id || '')
+          );
+        } else {
+          this.availableUsers = users;
+        }
+
+        console.log('Utilisateurs disponibles:', this.availableUsers);
 
         // Si l'équipe est déjà chargée, mettre à jour les noms des membres
         if (this.equipe && this.equipe.members) {
@@ -55,6 +68,7 @@ export class EquipeDetailComponent implements OnInit {
       },
       error: (error) => {
         console.error('Erreur lors du chargement des utilisateurs:', error);
+        alert('Erreur lors du chargement des utilisateurs. Veuillez rafraîchir la page.');
       }
     });
   }
@@ -176,6 +190,37 @@ export class EquipeDetailComponent implements OnInit {
     }
   }
 
+  // Méthode pour formater les dates
+  formatDate(date: Date | string | undefined): string {
+    if (!date) {
+      return 'N/A';
+    }
+
+    try {
+      let dateObj: Date;
+
+      if (typeof date === 'string') {
+        dateObj = new Date(date);
+      } else {
+        dateObj = date;
+      }
+
+      if (isNaN(dateObj.getTime())) {
+        return 'Date invalide';
+      }
+
+      // Format: JJ/MM/AAAA
+      return dateObj.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch (error) {
+      console.error('Erreur lors du formatage de la date:', error);
+      return 'Erreur de date';
+    }
+  }
+
   // Méthode pour ajouter un membre à l'équipe
   addMembre(userId: string, role: string): void {
     console.log(`Ajout de l'utilisateur ${userId} avec le rôle ${role}`);
@@ -190,6 +235,7 @@ export class EquipeDetailComponent implements OnInit {
     const isAlreadyMember = this.teamMembers.some(m => m.user === userId);
     if (isAlreadyMember) {
       this.error = 'Cet utilisateur est déjà membre de l\'équipe';
+      alert('Cet utilisateur est déjà membre de l\'équipe');
       return;
     }
 
@@ -206,14 +252,45 @@ export class EquipeDetailComponent implements OnInit {
     this.equipeService.addMembreToEquipe(this.equipeId, membre).subscribe({
       next: (response) => {
         console.log(`Utilisateur "${userName}" ajouté comme ${roleName} avec succès:`, response);
+
+        // Afficher un message de succès
+        alert(`Utilisateur "${userName}" ajouté comme ${roleName} avec succès`);
+
         // Recharger les membres de l'équipe
         this.loadTeamMembers(this.equipeId!);
+
         // Recharger l'équipe pour mettre à jour la liste des membres
         this.loadEquipe(this.equipeId!);
+
+        // Mettre à jour la liste des utilisateurs disponibles
+        this.updateAvailableUsers();
       },
       error: (error) => {
         console.error('Erreur lors de l\'ajout de l\'utilisateur comme membre:', error);
         this.error = `Impossible d'ajouter l'utilisateur "${userName}" comme ${roleName}. Veuillez réessayer plus tard.`;
+        alert(this.error);
+      }
+    });
+  }
+
+  // Méthode pour mettre à jour la liste des utilisateurs disponibles
+  updateAvailableUsers(): void {
+    this.userService.getUsers().subscribe({
+      next: (users) => {
+        // Filtrer les utilisateurs qui ne sont pas déjà membres de l'équipe
+        if (this.teamMembers && this.teamMembers.length > 0) {
+          const memberUserIds = this.teamMembers.map(m => m.user);
+          this.availableUsers = users.filter(user =>
+            !memberUserIds.includes(user._id || user.id || '')
+          );
+        } else {
+          this.availableUsers = users;
+        }
+
+        console.log('Liste des utilisateurs disponibles mise à jour:', this.availableUsers);
+      },
+      error: (error) => {
+        console.error('Erreur lors de la mise à jour des utilisateurs disponibles:', error);
       }
     });
   }
@@ -256,11 +333,17 @@ export class EquipeDetailComponent implements OnInit {
           console.log(`Utilisateur "${userName}" retiré avec succès de l'équipe:`, response);
           this.loading = false;
 
+          // Afficher un message de succès
+          alert(`Utilisateur "${userName}" retiré avec succès de l'équipe`);
+
           // Recharger les membres de l'équipe
           this.loadTeamMembers(this.equipeId!);
 
           // Recharger l'équipe pour mettre à jour la liste des membres
           this.loadEquipe(this.equipeId!);
+
+          // Mettre à jour la liste des utilisateurs disponibles
+          this.updateAvailableUsers();
         },
         error: (error) => {
           console.error(`Erreur lors du retrait de l'utilisateur "${userName}":`, error);

@@ -44,14 +44,15 @@ export class AiService {
    * Génère des tâches pour un projet en fonction du nombre de membres
    * @param projectTitle Titre du projet
    * @param memberCount Nombre de membres dans l'équipe
+   * @param teamMembers Liste des membres de l'équipe (optionnel)
    * @returns Observable contenant les tâches générées
    */
-  generateProjectTasks(projectTitle: string, memberCount: number): Observable<any> {
+  generateProjectTasks(projectTitle: string, memberCount: number, teamMembers?: any[]): Observable<any> {
     // Si le nombre de membres est trop petit, utiliser au moins 3 entités
     const effectiveMemberCount = Math.max(memberCount, 3);
 
     // Données de démonstration à utiliser en cas d'erreur ou si l'API n'est pas disponible
-    const fallbackData = this.createFallbackTaskData(projectTitle, effectiveMemberCount);
+    const fallbackData = this.createFallbackTaskData(projectTitle, effectiveMemberCount, teamMembers);
 
     // Si nous savons déjà que l'API n'est pas disponible, retourner directement les données de démonstration
     if (!this.isApiAvailable()) {
@@ -64,9 +65,23 @@ export class AiService {
       });
     }
 
+    // Préparer les informations sur les membres de l'équipe pour le prompt
+    let teamMembersInfo = '';
+    if (teamMembers && teamMembers.length > 0) {
+      teamMembersInfo = `
+      Membres de l'équipe:
+      ${teamMembers.map((member, index) => {
+        const memberName = member.name || member.firstName || member.lastName || `Membre ${index + 1}`;
+        const memberRole = member.role || 'membre';
+        return `- ${memberName} (${memberRole})`;
+      }).join('\n')}
+      `;
+    }
+
     const prompt = `
       Agis comme un expert en gestion de projet. Je travaille sur un projet intitulé "${projectTitle}"
       avec une équipe de ${effectiveMemberCount} membres.
+      ${teamMembersInfo}
 
       Divise ce projet en exactement ${effectiveMemberCount} entités ou modules principaux qui peuvent être travaillés en parallèle par chaque membre de l'équipe.
 
@@ -88,6 +103,7 @@ export class AiService {
           {
             "name": "Nom court de l'entité",
             "description": "Description très brève de l'entité",
+            "assignedTo": "Nom du membre (optionnel)",
             "tasks": [
               {
                 "title": "Titre court de la tâche",
@@ -136,67 +152,146 @@ export class AiService {
   }
 
   // Méthode pour créer des données de démonstration
-  private createFallbackTaskData(projectTitle: string, memberCount: number): any {
+  private createFallbackTaskData(projectTitle: string, memberCount: number, teamMembers?: any[]): any {
+    // Préparer les informations sur les membres pour l'assignation
+    const memberNames: string[] = [];
+    if (teamMembers && teamMembers.length > 0) {
+      teamMembers.forEach((member, index) => {
+        const memberName = member.name || member.firstName ||
+                          (member.firstName && member.lastName ? `${member.firstName} ${member.lastName}` : null) ||
+                          `Membre ${index + 1}`;
+        memberNames.push(memberName);
+      });
+    }
+
+    // Si pas assez de noms de membres, compléter avec des noms génériques
+    while (memberNames.length < memberCount) {
+      memberNames.push(`Membre ${memberNames.length + 1}`);
+    }
+
     // Données de démonstration pour un site e-commerce
     if (projectTitle.toLowerCase().includes('ecommerce') || projectTitle.toLowerCase().includes('e-commerce') || projectTitle.toLowerCase().includes('boutique')) {
+      const ecommerceEntities = [
+        {
+          name: "CRUD des produits",
+          description: "Gestion des produits dans la base de données",
+          assignedTo: memberNames[0] || "Non assigné",
+          tasks: [
+            {
+              title: "Créer API produits",
+              description: "Développer les endpoints pour créer, lire, modifier et supprimer des produits",
+              priority: "high",
+              status: "todo"
+            },
+            {
+              title: "Modèle de données",
+              description: "Concevoir le schéma de la base de données pour les produits",
+              priority: "medium",
+              status: "todo"
+            }
+          ]
+        },
+        {
+          name: "Interface utilisateur",
+          description: "Développement du frontend de l'application",
+          assignedTo: memberNames[1] || "Non assigné",
+          tasks: [
+            {
+              title: "Page d'accueil",
+              description: "Créer la page d'accueil avec la liste des produits",
+              priority: "high",
+              status: "todo"
+            },
+            {
+              title: "Panier d'achat",
+              description: "Implémenter la fonctionnalité du panier d'achat",
+              priority: "medium",
+              status: "todo"
+            }
+          ]
+        },
+        {
+          name: "Déploiement",
+          description: "Mise en production de l'application",
+          assignedTo: memberNames[2] || "Non assigné",
+          tasks: [
+            {
+              title: "Configuration serveur",
+              description: "Configurer le serveur pour l'hébergement",
+              priority: "medium",
+              status: "todo"
+            },
+            {
+              title: "Tests d'intégration",
+              description: "Effectuer des tests d'intégration avant le déploiement",
+              priority: "high",
+              status: "todo"
+            }
+          ]
+        },
+        {
+          name: "Gestion utilisateurs",
+          description: "Système d'authentification et profils",
+          assignedTo: memberNames[3] || "Non assigné",
+          tasks: [
+            {
+              title: "Authentification",
+              description: "Implémenter le système de connexion et d'inscription",
+              priority: "high",
+              status: "todo"
+            },
+            {
+              title: "Profils utilisateurs",
+              description: "Créer les pages de profil et de gestion des informations personnelles",
+              priority: "medium",
+              status: "todo"
+            }
+          ]
+        },
+        {
+          name: "Paiement en ligne",
+          description: "Intégration des systèmes de paiement",
+          assignedTo: memberNames[4] || "Non assigné",
+          tasks: [
+            {
+              title: "API de paiement",
+              description: "Intégrer une passerelle de paiement comme Stripe ou PayPal",
+              priority: "high",
+              status: "todo"
+            },
+            {
+              title: "Sécurité transactions",
+              description: "Mettre en place les mesures de sécurité pour les transactions",
+              priority: "high",
+              status: "todo"
+            }
+          ]
+        },
+        {
+          name: "SEO & Analytics",
+          description: "Optimisation pour les moteurs de recherche",
+          assignedTo: memberNames[5] || "Non assigné",
+          tasks: [
+            {
+              title: "Balises méta",
+              description: "Optimiser les balises méta et la structure du site",
+              priority: "medium",
+              status: "todo"
+            },
+            {
+              title: "Google Analytics",
+              description: "Intégrer des outils d'analyse du trafic",
+              priority: "low",
+              status: "todo"
+            }
+          ]
+        }
+      ];
+
+      // Limiter au nombre de membres
       return {
         projectTitle: projectTitle,
-        entities: [
-          {
-            name: "CRUD des produits",
-            description: "Gestion des produits dans la base de données",
-            tasks: [
-              {
-                title: "Créer API produits",
-                description: "Développer les endpoints pour créer, lire, modifier et supprimer des produits",
-                priority: "high",
-                status: "todo"
-              },
-              {
-                title: "Modèle de données",
-                description: "Concevoir le schéma de la base de données pour les produits",
-                priority: "medium",
-                status: "todo"
-              }
-            ]
-          },
-          {
-            name: "Interface utilisateur",
-            description: "Développement du frontend de l'application",
-            tasks: [
-              {
-                title: "Page d'accueil",
-                description: "Créer la page d'accueil avec la liste des produits",
-                priority: "high",
-                status: "todo"
-              },
-              {
-                title: "Panier d'achat",
-                description: "Implémenter la fonctionnalité du panier d'achat",
-                priority: "medium",
-                status: "todo"
-              }
-            ]
-          },
-          {
-            name: "Déploiement",
-            description: "Mise en production de l'application",
-            tasks: [
-              {
-                title: "Configuration serveur",
-                description: "Configurer le serveur pour l'hébergement",
-                priority: "medium",
-                status: "todo"
-              },
-              {
-                title: "Tests d'intégration",
-                description: "Effectuer des tests d'intégration avant le déploiement",
-                priority: "high",
-                status: "todo"
-              }
-            ]
-          }
-        ].slice(0, memberCount) // Limiter au nombre de membres
+        entities: ecommerceEntities.slice(0, memberCount)
       };
     }
 
@@ -215,6 +310,7 @@ export class AiService {
       entities: Array.from({ length: memberCount }, (_, i) => ({
         name: moduleTypes[i % moduleTypes.length].name,
         description: moduleTypes[i % moduleTypes.length].description,
+        assignedTo: memberNames[i] || "Non assigné",
         tasks: [
           {
             title: `Conception ${moduleTypes[i % moduleTypes.length].name}`,

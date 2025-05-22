@@ -1,70 +1,53 @@
-<div class="container-fluid py-5 bg-light" *ngIf="equipe">
+<div class="container-fluid py-5 bg-gradient-light" *ngIf="equipe">
   <div class="container">
     <!-- En-tête avec titre et actions -->
     <div class="row mb-5">
       <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center flex-wrap">
-          <div>
-            <h1 class="display-4 fw-bold text-primary">{{ equipe.name }}</h1>
-            <p class="text-muted lead">Détails et membres de l'équipe</p>
-          </div>
-          <div class="d-flex gap-2">
-            <button class="btn btn-outline-secondary rounded-pill px-4 py-2" (click)="navigateToEquipeList()">
-              <i class="bi bi-arrow-left me-2"></i> Retour
-            </button>
-            <button class="btn btn-primary rounded-pill px-4 py-2" (click)="navigateToTasks()">
-              <i class="bi bi-kanban me-2"></i> Tâches
-            </button>
-            <button class="btn btn-outline-primary rounded-pill px-4 py-2" (click)="navigateToEditEquipe()">
-              <i class="bi bi-pencil me-2"></i> Modifier
-            </button>
-            <button class="btn btn-outline-danger rounded-pill px-4 py-2" (click)="deleteEquipe()">
-              <i class="bi bi-trash me-2"></i> Supprimer
-            </button>
-          </div>
-        </div>
-        <hr class="my-4">
-      </div>
-    </div>
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+          <div class="card-body p-0">
+            <div class="row g-0">
+              <!-- Bannière avec titre -->
+              <div class="col-lg-8 p-5" style="background: linear-gradient(120deg, #6a11cb 0%, #2575fc 100%);">
+                <h1 class="display-4 fw-bold text-white mb-2">{{ equipe.name }}</h1>
+                <p class="text-white-50 lead mb-4">Gestion et collaboration d'équipe</p>
 
-    <!-- Carte d'informations de l'équipe -->
-    <div class="row mb-5">
-      <div class="col-lg-8">
-        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
-          <div class="card-header bg-gradient-primary text-white border-0 py-4">
-            <h3 class="mb-0 d-flex align-items-center">
-              <i class="bi bi-info-circle-fill me-2"></i>
-              Informations de l'équipe
-            </h3>
-          </div>
-          <div class="card-body p-4">
-            <div class="row">
-              <div class="col-md-8">
-                <h4 class="text-primary mb-3">Description</h4>
-                <p class="lead">{{ equipe.description }}</p>
+                <!-- Statistiques rapides -->
+                <div class="d-flex gap-4 mt-4">
+                  <div class="bg-white bg-opacity-25 rounded-4 p-3 text-white text-center">
+                    <i class="bi bi-people-fill fs-3 mb-2 d-block"></i>
+                    <span class="fs-5 fw-bold d-block">{{ equipe.members?.length || 0 }}</span>
+                    <small>Membres</small>
+                  </div>
+                  <div class="bg-white bg-opacity-25 rounded-4 p-3 text-white text-center">
+                    <i class="bi bi-kanban fs-3 mb-2 d-block"></i>
+                    <span class="fs-5 fw-bold d-block">0</span>
+                    <small>Tâches</small>
+                  </div>
+                  <div class="bg-white bg-opacity-25 rounded-4 p-3 text-white text-center">
+                    <i class="bi bi-calendar-check fs-3 mb-2 d-block"></i>
+                    <span class="fs-5 fw-bold d-block">{{ formatDate(equipe.createdAt) }}</span>
+                    <small>Créée le</small>
+                  </div>
+                </div>
               </div>
-              <div class="col-md-4">
-                <div class="card bg-light border-0 rounded-3 h-100">
-                  <div class="card-body">
-                    <h5 class="text-primary mb-3">Statistiques</h5>
-                    <div class="d-flex align-items-center mb-3">
-                      <div class="bg-primary rounded-circle p-2 me-3 text-white">
-                        <i class="bi bi-people-fill"></i>
-                      </div>
-                      <div>
-                        <div class="small text-muted">Membres</div>
-                        <div class="fw-bold fs-5">{{ equipe.members?.length || 0 }}</div>
-                      </div>
-                    </div>
-                    <div class="d-flex align-items-center">
-                      <div class="bg-success rounded-circle p-2 me-3 text-white">
-                        <i class="bi bi-person-fill-gear"></i>
-                      </div>
-                      <div>
-                        <div class="small text-muted">Administrateur</div>
-                        <div class="fw-bold">{{ equipe.admin ? (getUserName(equipe.admin) || equipe.admin) : 'Non défini' }}</div>
-                      </div>
-                    </div>
+
+              <!-- Actions rapides -->
+              <div class="col-lg-4 bg-white p-4 d-flex flex-column justify-content-center">
+                <h4 class="mb-4 text-primary"><i class="bi bi-lightning-charge-fill me-2"></i>Actions rapides</h4>
+                <div class="d-grid gap-3">
+                  <button class="btn btn-primary btn-lg rounded-3 shadow-sm" (click)="navigateToTasks()">
+                    <i class="bi bi-kanban me-2"></i> Gérer les tâches
+                  </button>
+                  <button class="btn btn-outline-primary rounded-3" (click)="navigateToEditEquipe()">
+                    <i class="bi bi-pencil me-2"></i> Modifier l'équipe
+                  </button>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary flex-grow-1 rounded-3" (click)="navigateToEquipeList()">
+                      <i class="bi bi-arrow-left me-2"></i> Retour
+                    </button>
+                    <button class="btn btn-outline-danger rounded-3" (click)="deleteEquipe()">
+                      <i class="bi bi-trash me-2"></i> Supprimer
+                    </button>
                   </div>
                 </div>
               </div>
@@ -72,15 +55,76 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Assistant IA pour la gestion de projet -->
-      <div class="col-lg-4">
-        <div class="card border-0 shadow-sm rounded-3 overflow-hidden h-100">
-          <div class="card-header bg-gradient-primary text-white border-0 py-4">
-            <h3 class="mb-0 d-flex align-items-center">
-              <i class="bi bi-robot me-2"></i>
-              Assistant IA
-            </h3>
+    <!-- Carte d'informations de l'équipe -->
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden hover-card">
+          <div class="card-body p-0">
+            <div class="row g-0">
+              <!-- Icône et titre -->
+              <div class="col-md-3 bg-primary text-white p-4 d-flex flex-column justify-content-center align-items-center text-center">
+                <div class="icon-circle bg-white text-primary mb-3">
+                  <i class="bi bi-info-circle-fill fs-1"></i>
+                </div>
+                <h3 class="mb-2">À propos</h3>
+                <p class="mb-0 text-white-50">Détails et informations sur l'équipe</p>
+              </div>
+
+              <!-- Contenu -->
+              <div class="col-md-9 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                  <h4 class="text-primary mb-0">Description</h4>
+                  <span class="badge bg-light text-primary rounded-pill px-3 py-2">
+                    <i class="bi bi-person-fill-gear me-1"></i>
+                    Admin: {{ equipe.admin ? (getUserName(equipe.admin) || equipe.admin) : 'Non défini' }}
+                  </span>
+                </div>
+
+                <div class="description-box p-3 bg-light rounded-4 mb-4">
+                  <p class="lead mb-0">{{ equipe.description || 'Aucune description disponible pour cette équipe.' }}</p>
+                </div>
+
+                <!-- Tags et informations supplémentaires -->
+                <div class="d-flex flex-wrap gap-2 mt-4">
+                  <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
+                    <i class="bi bi-people-fill me-1"></i>
+                    {{ equipe.members?.length || 0 }} membres
+                  </span>
+                  <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2">
+                    <i class="bi bi-calendar-check me-1"></i>
+                    Créée le {{ formatDate(equipe.createdAt) }}
+                  </span>
+                  <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-3 py-2">
+                    <i class="bi bi-kanban me-1"></i>
+                    Gestion de projet
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assistant IA pour la gestion de projet (pleine largeur) -->
+    <div class="row mb-5">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden hover-card">
+          <div class="card-header border-0 py-4" style="background: linear-gradient(45deg, #8e2de2, #4a00e0);">
+            <div class="d-flex justify-content-between align-items-center">
+              <h3 class="mb-0 text-white d-flex align-items-center">
+                <div class="icon-circle bg-white text-primary me-3">
+                  <i class="bi bi-robot"></i>
+                </div>
+                Assistant IA Gemini
+              </h3>
+              <span class="badge bg-white text-primary rounded-pill px-3 py-2">
+                <i class="bi bi-magic me-1"></i>
+                Génération de tâches intelligente
+              </span>
+            </div>
           </div>
           <div class="card-body p-0">
             <app-ai-chat [team]="equipe"></app-ai-chat>
@@ -91,105 +135,91 @@
 
     <!-- Section des membres de l'équipe -->
     <div class="row mb-5">
-      <div class="col-lg-8">
-        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
-          <div class="card-header bg-gradient-primary text-white border-0 py-4">
-            <h3 class="mb-0 d-flex align-items-center">
-              <i class="bi bi-people-fill me-2"></i>
+      <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden hover-card">
+          <div class="card-header border-0 py-4 d-flex justify-content-between align-items-center"
+               style="background: linear-gradient(45deg, #11998e, #38ef7d);">
+            <h3 class="mb-0 text-white d-flex align-items-center">
+              <div class="icon-circle bg-white text-success me-3">
+                <i class="bi bi-people-fill"></i>
+              </div>
               Membres de l'équipe
             </h3>
+            <span class="badge bg-white text-success rounded-pill px-3 py-2">
+              {{ teamMembers.length || 0 }} membres
+            </span>
           </div>
-          <div class="card-body p-4">
+
+          <div class="card-body p-0">
             <!-- Liste des membres -->
-            <div *ngIf="teamMembers && teamMembers.length > 0; else noMembers">
-              <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                  <thead class="table-light">
-                    <tr>
-                      <th>
+            <div *ngIf="teamMembers && teamMembers.length > 0; else noMembers" class="p-0">
+              <div class="row g-0">
+                <div class="col-md-8">
+                  <div class="member-grid p-4">
+                    <div *ngFor="let membre of teamMembers" class="member-card mb-3 p-3 rounded-4 shadow-sm transition">
+                      <div class="d-flex justify-content-between align-items-start">
+                        <!-- Informations du membre -->
                         <div class="d-flex align-items-center">
-                          <i class="bi bi-person text-primary me-2"></i> Utilisateur
-                        </div>
-                      </th>
-                      <th>
-                        <div class="d-flex align-items-center">
-                          <i class="bi bi-shield-lock text-primary me-2"></i> Rôle
-                        </div>
-                      </th>
-                      <th class="text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let membre of teamMembers" class="transition hover-row">
-                      <td>
-                        <div class="d-flex align-items-center">
-                          <div class="rounded-circle bg-light p-2 me-3">
+                          <div class="member-avatar rounded-circle text-white me-3"
+                               [ngClass]="{
+                                 'bg-primary': getUserProfession(membre.user) === 'etudiant',
+                                 'bg-success': getUserProfession(membre.user) === 'professeur',
+                                 'bg-secondary': !getUserProfession(membre.user)
+                               }">
                             <i class="bi" [ngClass]="{
-                              'bi-mortarboard-fill text-primary': getUserProfession(membre.user) === 'etudiant',
-                              'bi-briefcase-fill text-success': getUserProfession(membre.user) === 'professeur',
-                              'bi-person-fill text-secondary': !getUserProfession(membre.user)
+                              'bi-mortarboard-fill': getUserProfession(membre.user) === 'etudiant',
+                              'bi-briefcase-fill': getUserProfession(membre.user) === 'professeur',
+                              'bi-person-fill': !getUserProfession(membre.user)
                             }"></i>
                           </div>
                           <div>
-                            <div class="fw-medium">{{ getUserName(membre.user) }}</div>
-                            <small class="text-muted">ID: {{ membre.user }}</small>
+                            <h6 class="mb-0 fw-bold">{{ getUserName(membre.user) }}</h6>
+                            <div class="d-flex align-items-center mt-1">
+                              <span class="badge rounded-pill me-2" [ngClass]="{
+                                'bg-success bg-opacity-10 text-success': membre.role === 'admin',
+                                'bg-primary bg-opacity-10 text-primary': membre.role === 'membre'
+                              }">
+                                <i class="bi" [ngClass]="{
+                                  'bi-person-fill-gear': membre.role === 'admin',
+                                  'bi-person': membre.role === 'membre'
+                                }"></i>
+                                {{ membre.role === 'admin' ? 'Administrateur' : 'Membre' }}
+                              </span>
+                              <small class="text-muted">{{ getUserProfession(membre.user) === 'etudiant' ? 'Étudiant' :
+                                                          getUserProfession(membre.user) === 'professeur' ? 'Professeur' : 'Utilisateur' }}</small>
+                            </div>
                           </div>
                         </div>
-                      </td>
-                      <td>
-                        <span class="badge rounded-pill px-3 py-2 shadow-sm" [ngClass]="{
-                          'bg-success': membre.role === 'admin',
-                          'bg-primary': membre.role === 'membre'
-                        }">
-                          <i class="bi" [ngClass]="{
-                            'bi-person-fill-gear': membre.role === 'admin',
-                            'bi-person': membre.role === 'membre'
-                          }"></i>
-                          {{ membre.role === 'admin' ? 'Administrateur' : 'Membre' }}
-                        </span>
-                      </td>
-                      <td class="text-center">
+
+                        <!-- Actions -->
                         <button class="btn btn-sm btn-outline-danger rounded-circle"
                                 title="Retirer de l'équipe"
                                 (click)="removeMembreFromEquipe(membre._id)">
                           <i class="bi bi-trash"></i>
                         </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-            <ng-template #noMembers>
-              <div class="text-center py-4">
-                <i class="bi bi-people fs-1 text-muted mb-3 d-block"></i>
-                <h5 class="text-muted">Aucun membre dans cette équipe</h5>
-                <p class="text-muted">Ajoutez des membres à l'équipe en utilisant le formulaire ci-dessous.</p>
-              </div>
-            </ng-template>
+                <!-- Formulaire d'ajout de membre -->
+                <div class="col-md-4 bg-light p-4">
+                  <h5 class="d-flex align-items-center mb-4 text-success">
+                    <i class="bi bi-person-plus-fill me-2"></i>
+                    Ajouter un membre
+                  </h5>
 
-            <!-- Formulaire d'ajout de membre -->
-            <div class="mt-4">
-              <h5 class="d-flex align-items-center mb-3">
-                <i class="bi bi-person-plus-fill text-primary me-2"></i>
-                Ajouter un membre
-              </h5>
+                  <!-- Afficher un message si aucun utilisateur n'est disponible -->
+                  <div *ngIf="availableUsers.length === 0" class="alert alert-info border-0 rounded-4 shadow-sm d-flex align-items-center">
+                    <i class="bi bi-info-circle-fill fs-4 me-3 text-primary"></i>
+                    <div>Aucun utilisateur disponible. Veuillez d'abord créer des utilisateurs.</div>
+                  </div>
 
-              <!-- Afficher un message si aucun utilisateur n'est disponible -->
-              <div *ngIf="availableUsers.length === 0" class="alert alert-info border-0 rounded-3 shadow-sm d-flex align-items-center">
-                <i class="bi bi-info-circle-fill fs-4 me-3 text-primary"></i>
-                <div>Aucun utilisateur disponible. Veuillez d'abord créer des utilisateurs.</div>
-              </div>
-
-              <!-- Formulaire d'ajout d'utilisateur avec rôle -->
-              <div *ngIf="availableUsers.length > 0" class="card border-0 bg-light rounded-3 mb-3">
-                <div class="card-body p-4">
-                  <div class="row g-3">
-                    <!-- Sélection de l'utilisateur -->
-                    <div class="col-md-6">
+                  <!-- Formulaire d'ajout d'utilisateur avec rôle -->
+                  <div *ngIf="availableUsers.length > 0" class="add-member-form">
+                    <div class="mb-3">
                       <label for="userSelect" class="form-label fw-medium">Utilisateur</label>
-                      <select #userSelect id="userSelect" class="form-select border-0 shadow-sm">
+                      <select #userSelect id="userSelect" class="form-select border-0 shadow-sm rounded-4 py-2">
                         <option value="" selected disabled>Sélectionnez un utilisateur</option>
                         <option *ngFor="let user of availableUsers" [value]="user._id || user.id">
                           {{ user.firstName || '' }} {{ user.lastName || user.name || user.id }}
@@ -199,27 +229,108 @@
                       </select>
                     </div>
 
-                    <!-- Sélection du rôle dans l'équipe -->
-                    <div class="col-md-4">
+                    <div class="mb-3">
                       <label for="roleSelect" class="form-label fw-medium">Rôle dans l'équipe</label>
-                      <select #roleSelect id="roleSelect" class="form-select border-0 shadow-sm">
-                        <option value="membre" selected>Membre</option>
-                        <option value="admin">Administrateur</option>
-                      </select>
+                      <div class="d-flex gap-2">
+                        <div class="form-check flex-grow-1">
+                          <input class="form-check-input" type="radio" name="roleRadio" id="roleMembre" value="membre" checked #roleMembre>
+                          <label class="form-check-label w-100 p-2 border rounded-4 text-center" for="roleMembre">
+                            <i class="bi bi-person d-block fs-4 mb-1"></i>
+                            Membre
+                          </label>
+                        </div>
+                        <div class="form-check flex-grow-1">
+                          <input class="form-check-input" type="radio" name="roleRadio" id="roleAdmin" value="admin" #roleAdmin>
+                          <label class="form-check-label w-100 p-2 border rounded-4 text-center" for="roleAdmin">
+                            <i class="bi bi-person-fill-gear d-block fs-4 mb-1"></i>
+                            Admin
+                          </label>
+                        </div>
+                      </div>
                     </div>
 
-                    <!-- Bouton d'ajout -->
-                    <div class="col-md-2 d-flex align-items-end">
-                      <button type="button" class="btn btn-primary rounded-pill w-100 shadow-sm"
+                    <div class="d-grid">
+                      <button type="button" class="btn btn-success rounded-4 py-2 shadow-sm"
                               [disabled]="!userSelect.value"
-                              (click)="addMembre(userSelect.value, roleSelect.value); userSelect.value = ''">
-                        <i class="bi bi-plus-circle me-1"></i> Ajouter
+                              (click)="addMembre(userSelect.value, roleMembre.checked ? 'membre' : 'admin'); userSelect.value = ''">
+                        <i class="bi bi-plus-circle me-2"></i> Ajouter à l'équipe
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+
+            <ng-template #noMembers>
+              <div class="row g-0">
+                <div class="col-md-8">
+                  <div class="text-center py-5">
+                    <div class="empty-state-icon mb-4">
+                      <i class="bi bi-people fs-1 text-muted"></i>
+                    </div>
+                    <h5 class="text-muted">Aucun membre dans cette équipe</h5>
+                    <p class="text-muted">Ajoutez des membres à l'équipe en utilisant le formulaire ci-contre.</p>
+                  </div>
+                </div>
+
+                <!-- Formulaire d'ajout de membre (même code que ci-dessus) -->
+                <div class="col-md-4 bg-light p-4">
+                  <h5 class="d-flex align-items-center mb-4 text-success">
+                    <i class="bi bi-person-plus-fill me-2"></i>
+                    Ajouter un membre
+                  </h5>
+
+                  <!-- Afficher un message si aucun utilisateur n'est disponible -->
+                  <div *ngIf="availableUsers.length === 0" class="alert alert-info border-0 rounded-4 shadow-sm d-flex align-items-center">
+                    <i class="bi bi-info-circle-fill fs-4 me-3 text-primary"></i>
+                    <div>Aucun utilisateur disponible. Veuillez d'abord créer des utilisateurs.</div>
+                  </div>
+
+                  <!-- Formulaire d'ajout d'utilisateur avec rôle -->
+                  <div *ngIf="availableUsers.length > 0" class="add-member-form">
+                    <div class="mb-3">
+                      <label for="userSelect2" class="form-label fw-medium">Utilisateur</label>
+                      <select #userSelect2 id="userSelect2" class="form-select border-0 shadow-sm rounded-4 py-2">
+                        <option value="" selected disabled>Sélectionnez un utilisateur</option>
+                        <option *ngFor="let user of availableUsers" [value]="user._id || user.id">
+                          {{ user.firstName || '' }} {{ user.lastName || user.name || user.id }}
+                          {{ user.email ? '- ' + user.email : '' }}
+                          {{ user.profession ? '(' + (user.profession === 'etudiant' ? 'Étudiant' : 'Professeur') + ')' : '' }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <div class="mb-3">
+                      <label for="roleSelect2" class="form-label fw-medium">Rôle dans l'équipe</label>
+                      <div class="d-flex gap-2">
+                        <div class="form-check flex-grow-1">
+                          <input class="form-check-input" type="radio" name="roleRadio2" id="roleMembre2" value="membre" checked #roleMembre2>
+                          <label class="form-check-label w-100 p-2 border rounded-4 text-center" for="roleMembre2">
+                            <i class="bi bi-person d-block fs-4 mb-1"></i>
+                            Membre
+                          </label>
+                        </div>
+                        <div class="form-check flex-grow-1">
+                          <input class="form-check-input" type="radio" name="roleRadio2" id="roleAdmin2" value="admin" #roleAdmin2>
+                          <label class="form-check-label w-100 p-2 border rounded-4 text-center" for="roleAdmin2">
+                            <i class="bi bi-person-fill-gear d-block fs-4 mb-1"></i>
+                            Admin
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="d-grid">
+                      <button type="button" class="btn btn-success rounded-4 py-2 shadow-sm"
+                              [disabled]="!userSelect2.value"
+                              (click)="addMembre(userSelect2.value, roleMembre2.checked ? 'membre' : 'admin'); userSelect2.value = ''">
+                        <i class="bi bi-plus-circle me-2"></i> Ajouter à l'équipe
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-template>
           </div>
         </div>
       </div>
@@ -253,15 +364,61 @@
     background: linear-gradient(45deg, #007bff, #6610f2) !important;
   }
 
-  /* Animation au survol des lignes du tableau */
-  .transition {
-    transition: all 0.2s ease;
+  .bg-gradient-light {
+    background: linear-gradient(to right, #f8f9fa, #e9ecef) !important;
   }
 
-  .hover-row:hover {
-    background-color: rgba(13, 110, 253, 0.05) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  /* Animation au survol des éléments */
+  .transition {
+    transition: all 0.3s ease;
+  }
+
+  /* Effet de survol pour les cartes */
+  .hover-card {
+    transition: all 0.3s ease;
+  }
+
+  .hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* Styles pour les cartes de membres */
+  .member-card {
+    background-color: white;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+  }
+
+  .member-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* Avatar des membres */
+  .member-avatar {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+  }
+
+  /* Icône circulaire */
+  .icon-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+  }
+
+  /* Styles pour la boîte de description */
+  .description-box {
+    border-left: 4px solid #007bff;
   }
 
   /* Animation pour les boutons */
@@ -271,5 +428,57 @@
 
   .btn:hover {
     transform: translateY(-2px);
+  }
+
+  /* Styles pour les badges */
+  .badge {
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  /* Styles pour les formulaires */
+  .form-select, .form-control {
+    transition: all 0.2s ease;
+  }
+
+  .form-select:focus, .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+  }
+
+  /* Styles pour les états vides */
+  .empty-state-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    background-color: #f8f9fa;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: #adb5bd;
+  }
+
+  /* Styles pour les sélecteurs de rôle */
+  .form-check-label {
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .form-check-input:checked + .form-check-label {
+    background-color: rgba(13, 110, 253, 0.1);
+    border-color: #007bff;
+  }
+
+  /* Styles pour les arrondis */
+  .rounded-4 {
+    border-radius: 0.75rem !important;
+  }
+
+  /* Styles pour la grille de membres */
+  .member-grid {
+    max-height: 500px;
+    overflow-y: auto;
   }
 </style>

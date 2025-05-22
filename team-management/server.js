@@ -6,6 +6,7 @@ const teamRoutes = require('./routes/teamRoute');
 const teamMemberRoutes = require("./routes/teamMemberRoute");
 const projectsRoutes = require('./routes/projectRoutes'); // Import des routes des projets
 const userRoutes = require('./routes/userRoutes'); // Import des routes des utilisateurs
+const taskRoutes = require('./routes/taskRoutes'); // Import des routes des tâches
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use('/api/teams', teamRoutes);
 app.use('/api/teammembers', teamMemberRoutes);
 app.use('/api/projects', projectsRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/tasks', taskRoutes);
 
 // Démarrer le serveur
 const PORT = process.env.PORT || 5000;

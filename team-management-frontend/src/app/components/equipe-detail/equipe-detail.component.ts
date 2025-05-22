@@ -170,6 +170,12 @@ export class EquipeDetailComponent implements OnInit {
     this.router.navigate(['/equipes/liste']);
   }
 
+  navigateToTasks(): void {
+    if (this.equipeId) {
+      this.router.navigate(['/equipes/tasks', this.equipeId]);
+    }
+  }
+
   // Méthode pour ajouter un membre à l'équipe
   addMembre(userId: string, role: string): void {
     console.log(`Ajout de l'utilisateur ${userId} avec le rôle ${role}`);

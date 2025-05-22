@@ -1,0 +1,139 @@
+<div class="ai-chat-container">
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-primary text-white py-3">
+      <h5 class="mb-0">
+        <i class="bi bi-robot me-2"></i> Assistant IA pour la gestion de projet
+      </h5>
+    </div>
+
+    <div class="card-body p-0">
+      <!-- Messages du chat -->
+      <div class="chat-messages p-3" #chatContainer>
+        <div *ngFor="let message of messages"
+             class="message mb-3"
+             [ngClass]="{'user-message': message.role === 'user', 'assistant-message': message.role === 'assistant'}">
+          <div class="message-content p-3 rounded">
+            <p class="mb-0" [innerHTML]="message.content"></p>
+          </div>
+        </div>
+
+        <!-- Indicateur de chargement -->
+        <div *ngIf="isGenerating || isAskingQuestion" class="message assistant-message mb-3">
+          <div class="message-content p-3 rounded">
+            <div class="typing-indicator">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Résultats générés -->
+      <div *ngIf="generatedContent" class="generated-content p-3 border-top">
+        <h6 class="text-primary mb-3">Tâches générées pour "{{ generatedContent.projectTitle }}"</h6>
+
+        <!-- Affichage simplifié des entités -->
+        <div class="row mb-4">
+          <div *ngFor="let entity of generatedContent.entities; let i = index" class="col-md-4 mb-3">
+            <div class="card h-100 border-0 shadow-sm">
+              <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">{{ entity.name }}</h5>
+              </div>
+              <div class="card-body">
+                <p class="text-muted">{{ entity.description }}</p>
+                <h6 class="mt-3 mb-2">Tâches principales:</h6>
+                <ul class="list-group list-group-flush">
+                  <li *ngFor="let task of entity.tasks" class="list-group-item px-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span>{{ task.title }}</span>
+                      <span class="badge" [ngClass]="{
+                        'bg-danger': task.priority === 'high',
+                        'bg-warning text-dark': task.priority === 'medium',
+                        'bg-info text-dark': task.priority === 'low'
+                      }">
+                        {{ task.priority === 'high' ? 'Haute' :
+                           task.priority === 'medium' ? 'Moyenne' : 'Basse' }}
+                      </span>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Affichage détaillé (accordéon) -->
+        <div class="accordion d-none" id="generatedTasksAccordion">
+          <div *ngFor="let entity of generatedContent.entities; let i = index" class="accordion-item border-0 mb-2">
+            <h2 class="accordion-header" [id]="'heading' + i">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                      [attr.data-bs-target]="'#collapse' + i" [attr.aria-expanded]="i === 0" [attr.aria-controls]="'collapse' + i">
+                <strong>{{ entity.name }}</strong>
+                <span class="badge bg-primary rounded-pill ms-2">{{ entity.tasks.length }} tâches</span>
+              </button>
+            </h2>
+            <div [id]="'collapse' + i" class="accordion-collapse collapse" [attr.aria-labelledby]="'heading' + i" data-bs-parent="#generatedTasksAccordion">
+              <div class="accordion-body">
+                <p class="text-muted mb-3">{{ entity.description }}</p>
+
+                <div class="list-group">
+                  <div *ngFor="let task of entity.tasks" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                      <h6 class="mb-1">{{ task.title }}</h6>
+                      <span class="badge" [ngClass]="{
+                        'bg-danger': task.priority === 'high',
+                        'bg-warning text-dark': task.priority === 'medium',
+                        'bg-info text-dark': task.priority === 'low'
+                      }">
+                        {{ task.priority === 'high' ? 'Haute' :
+                           task.priority === 'medium' ? 'Moyenne' : 'Basse' }}
+                      </span>
+                    </div>
+                    <p class="mb-1 small">{{ task.description }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-grid mt-3">
+          <button class="btn btn-success" (click)="createTasks()">
+            <i class="bi bi-plus-circle me-2"></i> Créer ces tâches
+          </button>
+        </div>
+      </div>
+
+      <!-- Message d'erreur -->
+      <div *ngIf="error" class="alert alert-danger m-3">
+        {{ error }}
+      </div>
+
+      <!-- Entrée utilisateur -->
+      <div class="chat-input p-3 border-top">
+        <div *ngIf="!generatedContent" class="mb-3">
+          <label for="projectTitle" class="form-label">Titre du projet</label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="projectTitle"
+                   [(ngModel)]="projectTitle" placeholder="Entrez le titre de votre projet"
+                   [disabled]="isGenerating">
+            <button class="btn btn-primary" (click)="generateTasks()" [disabled]="isGenerating || !projectTitle.trim()">
+              <i class="bi" [ngClass]="isGenerating ? 'bi-hourglass-split' : 'bi-magic'"></i>
+              {{ isGenerating ? 'Génération...' : 'Générer des tâches' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <input type="text" class="form-control" placeholder="Posez une question sur la gestion de projet..."
+                 [(ngModel)]="userQuestion" (keyup.enter)="askQuestion()"
+                 [disabled]="isAskingQuestion">
+          <button class="btn btn-outline-primary" (click)="askQuestion()" [disabled]="isAskingQuestion || !userQuestion.trim()">
+            <i class="bi" [ngClass]="isAskingQuestion ? 'bi-hourglass-split' : 'bi-send'"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

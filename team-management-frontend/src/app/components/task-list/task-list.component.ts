@@ -60,102 +60,143 @@ export class TaskListComponent implements OnInit {
   loadTeamDetails(teamId: string): void {
     this.loading = true;
 
-    // Données de test pour simuler les détails de l'équipe
-    const mockTeam: Equipe = {
-      _id: teamId,
-      name: 'Équipe ' + teamId,
-      description: 'Description de l\'équipe ' + teamId,
-      admin: 'admin123',
-      members: []
-    };
+    // Utiliser les données de test si l'API n'est pas disponible
+    const useMockData = false; // Mettre à true pour utiliser les données de test
 
-    // Utiliser les données de test au lieu d'appeler l'API
-    setTimeout(() => {
-      this.team = mockTeam;
-      this.loading = false;
-      console.log('Détails de l\'équipe chargés (mock):', this.team);
-    }, 300);
+    if (useMockData) {
+      // Données de test pour simuler les détails de l'équipe
+      const mockTeam: Equipe = {
+        _id: teamId,
+        name: 'Équipe ' + teamId,
+        description: 'Description de l\'équipe ' + teamId,
+        admin: 'admin123',
+        members: []
+      };
 
-    // Commenté pour le moment, à décommenter quand l'API sera prête
-    /*
-    this.equipeService.getEquipe(teamId).pipe(
-      finalize(() => this.loading = false)
-    ).subscribe({
-      next: (data) => {
-        this.team = data;
-      },
-      error: (error) => {
-        console.error('Erreur lors du chargement des détails de l\'équipe:', error);
-        this.error = 'Impossible de charger les détails de l\'équipe';
-        this.notificationService.showError('Erreur lors du chargement des détails de l\'équipe');
-      }
-    });
-    */
+      setTimeout(() => {
+        this.team = mockTeam;
+        this.loading = false;
+        console.log('Détails de l\'équipe chargés (mock):', this.team);
+      }, 300);
+    } else {
+      // Utiliser l'API réelle
+      this.equipeService.getEquipe(teamId).pipe(
+        finalize(() => this.loading = false)
+      ).subscribe({
+        next: (data) => {
+          this.team = data;
+          console.log('Détails de l\'équipe chargés depuis l\'API:', this.team);
+        },
+        error: (error) => {
+          console.error('Erreur lors du chargement des détails de l\'équipe:', error);
+          this.error = 'Impossible de charger les détails de l\'équipe';
+          this.notificationService.showError('Erreur lors du chargement des détails de l\'équipe');
+
+          // Fallback aux données de test en cas d'erreur
+          const mockTeam: Equipe = {
+            _id: teamId,
+            name: 'Équipe ' + teamId + ' (fallback)',
+            description: 'Description de l\'équipe ' + teamId,
+            admin: 'admin123',
+            members: []
+          };
+
+          this.team = mockTeam;
+        }
+      });
+    }
   }
 
   loadTasks(teamId: string): void {
     this.loading = true;
 
-    // Données de test pour simuler les tâches
-    const mockTasks: Task[] = [
-      {
-        _id: '1',
-        title: 'Tâche 1',
-        description: 'Description de la tâche 1',
-        status: 'todo',
-        priority: 'high',
-        teamId: teamId
-      },
-      {
-        _id: '2',
-        title: 'Tâche 2',
-        description: 'Description de la tâche 2',
-        status: 'todo',
-        priority: 'medium',
-        teamId: teamId
-      },
-      {
-        _id: '3',
-        title: 'Tâche 3',
-        description: 'Description de la tâche 3',
-        status: 'in-progress',
-        priority: 'high',
-        teamId: teamId
-      },
-      {
-        _id: '4',
-        title: 'Tâche 4',
-        description: 'Description de la tâche 4',
-        status: 'done',
-        priority: 'low',
-        teamId: teamId
-      }
-    ];
+    // Utiliser les données de test si l'API n'est pas disponible
+    const useMockData = false; // Mettre à true pour utiliser les données de test
 
-    // Utiliser les données de test au lieu d'appeler l'API
-    setTimeout(() => {
-      this.tasks = mockTasks;
-      this.sortTasks();
-      this.loading = false;
-      console.log('Tâches chargées (mock):', this.tasks);
-    }, 500);
+    if (useMockData) {
+      // Données de test pour simuler les tâches
+      const mockTasks: Task[] = [
+        {
+          _id: '1',
+          title: 'Tâche 1',
+          description: 'Description de la tâche 1',
+          status: 'todo',
+          priority: 'high',
+          teamId: teamId
+        },
+        {
+          _id: '2',
+          title: 'Tâche 2',
+          description: 'Description de la tâche 2',
+          status: 'todo',
+          priority: 'medium',
+          teamId: teamId
+        },
+        {
+          _id: '3',
+          title: 'Tâche 3',
+          description: 'Description de la tâche 3',
+          status: 'in-progress',
+          priority: 'high',
+          teamId: teamId
+        },
+        {
+          _id: '4',
+          title: 'Tâche 4',
+          description: 'Description de la tâche 4',
+          status: 'done',
+          priority: 'low',
+          teamId: teamId
+        }
+      ];
 
-    // Commenté pour le moment, à décommenter quand l'API sera prête
-    /*
-    this.taskService.getTasksByTeam(teamId).pipe(
-      finalize(() => this.loading = false)
-    ).subscribe({
-      next: (data: Task[]) => {
-        this.tasks = data;
+      setTimeout(() => {
+        this.tasks = mockTasks;
         this.sortTasks();
-      },
-      error: (error: any) => {
-        console.error('Erreur lors du chargement des tâches:', error);
-        this.error = 'Impossible de charger les tâches';
-        this.notificationService.showError('Erreur lors du chargement des tâches');
-      }
-    });
-    */
+        this.loading = false;
+        console.log('Tâches chargées (mock):', this.tasks);
+      }, 500);
+    } else {
+      // Utiliser l'API réelle
+      this.taskService.getTasksByTeam(teamId).pipe(
+        finalize(() => this.loading = false)
+      ).subscribe({
+        next: (data: Task[]) => {
+          this.tasks = data;
+          this.sortTasks();
+          console.log('Tâches chargées depuis l\'API:', this.tasks);
+        },
+        error: (error: any) => {
+          console.error('Erreur lors du chargement des tâches:', error);
+          this.error = 'Impossible de charger les tâches';
+          this.notificationService.showError('Erreur lors du chargement des tâches');
+
+          // Fallback aux données de test en cas d'erreur
+          const mockTasks: Task[] = [
+            {
+              _id: '1',
+              title: 'Tâche 1 (fallback)',
+              description: 'Description de la tâche 1',
+              status: 'todo',
+              priority: 'high',
+              teamId: teamId
+            },
+            {
+              _id: '2',
+              title: 'Tâche 2 (fallback)',
+              description: 'Description de la tâche 2',
+              status: 'todo',
+              priority: 'medium',
+              teamId: teamId
+            }
+          ];
+
+          this.tasks = mockTasks;
+          this.sortTasks();
+          console.log('Tâches chargées (fallback):', this.tasks);
+        }
+      });
+    }
   }
 
   // Gestion du glisser-déposer
@@ -192,39 +233,61 @@ export class TaskListComponent implements OnInit {
   }
 
   loadUsers(): void {
-    // Données de test pour simuler les utilisateurs
-    const mockUsers: User[] = [
-      {
-        _id: 'user1',
-        name: 'John Doe',
-        email: 'john@example.com',
-        role: 'admin'
-      },
-      {
-        _id: 'user2',
-        name: 'Jane Smith',
-        email: 'jane@example.com',
-        role: 'member'
-      }
-    ];
+    // Utiliser les données de test si l'API n'est pas disponible
+    const useMockData = false; // Mettre à true pour utiliser les données de test
 
-    // Utiliser les données de test au lieu d'appeler l'API
-    setTimeout(() => {
-      this.users = mockUsers;
-      console.log('Utilisateurs chargés (mock):', this.users);
-    }, 400);
+    if (useMockData) {
+      // Données de test pour simuler les utilisateurs
+      const mockUsers: User[] = [
+        {
+          _id: 'user1',
+          name: 'John Doe',
+          email: 'john@example.com',
+          role: 'admin'
+        },
+        {
+          _id: 'user2',
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          role: 'member'
+        }
+      ];
 
-    // Commenté pour le moment, à décommenter quand l'API sera prête
-    /*
-    this.userService.getUsers().subscribe({
-      next: (data: User[]) => {
-        this.users = data;
-      },
-      error: (error: any) => {
-        console.error('Erreur lors du chargement des utilisateurs:', error);
-      }
-    });
-    */
+      setTimeout(() => {
+        this.users = mockUsers;
+        console.log('Utilisateurs chargés (mock):', this.users);
+      }, 400);
+    } else {
+      // Utiliser l'API réelle
+      this.userService.getUsers().subscribe({
+        next: (data: User[]) => {
+          this.users = data;
+          console.log('Utilisateurs chargés depuis l\'API:', this.users);
+        },
+        error: (error: any) => {
+          console.error('Erreur lors du chargement des utilisateurs:', error);
+
+          // Fallback aux données de test en cas d'erreur
+          const mockUsers: User[] = [
+            {
+              _id: 'user1',
+              name: 'John Doe (fallback)',
+              email: 'john@example.com',
+              role: 'admin'
+            },
+            {
+              _id: 'user2',
+              name: 'Jane Smith (fallback)',
+              email: 'jane@example.com',
+              role: 'member'
+            }
+          ];
+
+          this.users = mockUsers;
+          console.log('Utilisateurs chargés (fallback):', this.users);
+        }
+      });
+    }
   }
 
   getUserName(userId: string): string {

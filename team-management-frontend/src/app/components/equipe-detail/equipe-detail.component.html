@@ -12,6 +12,9 @@
             <button class="btn btn-outline-secondary rounded-pill px-4 py-2" (click)="navigateToEquipeList()">
               <i class="bi bi-arrow-left me-2"></i> Retour
             </button>
+            <button class="btn btn-primary rounded-pill px-4 py-2" (click)="navigateToTasks()">
+              <i class="bi bi-kanban me-2"></i> Tâches
+            </button>
             <button class="btn btn-outline-primary rounded-pill px-4 py-2" (click)="navigateToEditEquipe()">
               <i class="bi bi-pencil me-2"></i> Modifier
             </button>
@@ -66,6 +69,21 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Assistant IA pour la gestion de projet -->
+      <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden h-100">
+          <div class="card-header bg-gradient-primary text-white border-0 py-4">
+            <h3 class="mb-0 d-flex align-items-center">
+              <i class="bi bi-robot me-2"></i>
+              Assistant IA
+            </h3>
+          </div>
+          <div class="card-body p-0">
+            <app-ai-chat [team]="equipe"></app-ai-chat>
           </div>
         </div>
       </div>

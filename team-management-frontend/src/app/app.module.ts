@@ -14,6 +14,7 @@ import { NotificationComponent } from './components/notification/notification.co
 import { UserComponent } from './components/user/user.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { TaskListComponent } from './components/task-list/task-list.component';
+import { AiChatComponent } from './components/ai-chat/ai-chat.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { TaskListComponent } from './components/task-list/task-list.component';
     NotificationComponent,
     UserComponent,
     NavbarComponent,
-    TaskListComponent
+    TaskListComponent,
+    AiChatComponent
   ],
   imports: [
     BrowserModule,

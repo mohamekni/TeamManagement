@@ -4,6 +4,7 @@ import { EquipeComponent } from './components/equipe/equipe.component';
 import { EquipeListComponent } from './components/equipe-list/equipe-list.component';
 import { EquipeFormComponent } from './components/equipe-form/equipe-form.component';
 import { EquipeDetailComponent } from './components/equipe-detail/equipe-detail.component';
+import { TaskListComponent } from './components/task-list/task-list.component';
 import { UserComponent } from './components/user/user.component';
 
 const routes: Routes = [
@@ -24,7 +25,10 @@ const routes: Routes = [
       { path: 'modifier/:id', component: EquipeFormComponent },
 
       // Détails d'une équipe spécifique
-      { path: 'detail/:id', component: EquipeDetailComponent }
+      { path: 'detail/:id', component: EquipeDetailComponent },
+
+      // Gestion des tâches d'une équipe
+      { path: 'tasks/:id', component: TaskListComponent }
     ]
   },
 

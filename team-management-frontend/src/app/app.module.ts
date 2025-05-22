@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import { AppComponent } from './app.component';
 import { EquipeComponent } from './components/equipe/equipe.component';
@@ -12,6 +13,7 @@ import { EquipeDetailComponent } from './components/equipe-detail/equipe-detail.
 import { NotificationComponent } from './components/notification/notification.component';
 import { UserComponent } from './components/user/user.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { TaskListComponent } from './components/task-list/task-list.component';
 
 @NgModule({
   declarations: [
@@ -22,13 +24,15 @@ import { NavbarComponent } from './components/navbar/navbar.component';
     EquipeDetailComponent,
     NotificationComponent,
     UserComponent,
-    NavbarComponent
+    NavbarComponent,
+    TaskListComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    FormsModule
+    FormsModule,
+    DragDropModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -94,4 +94,18 @@ export class EquipeListComponent implements OnInit {
       });
     }
   }
+
+  navigateToTasks(id: string): void {
+    if (!id) {
+      console.error('ID est indéfini');
+      this.notificationService.showError('ID d\'équipe invalide');
+      return;
+    }
+
+    const equipe = this.equipes.find(e => e._id === id);
+    const equipeName = equipe?.name || 'cette équipe';
+
+    // Naviguer vers la page des tâches de l'équipe
+    this.router.navigate(['/equipes/tasks', id]);
+  }
 }
